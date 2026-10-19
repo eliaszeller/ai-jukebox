@@ -242,6 +242,7 @@ const player = {
   },
 
   load(src) {
+    updateProgress(0);
     audio.src = src;
     if (!this.paused) audio.play().catch((e) => {
       if (e.name === "NotAllowedError") { this.paused = true; updatePlayButton(); toast("Press play to start audio."); }
@@ -251,7 +252,7 @@ const player = {
   next() {
     if (this.index + 1 < this.queue.length) return this.startAt(this.index + 1);
     ++this.token;
-    audio.pause(); audio.removeAttribute("src");
+    audio.pause(); audio.removeAttribute("src"); updateProgress(0);
     this.index = this.queue.length;
     this.setPhase("ended");
     renderQueue(); renderLibrary();
@@ -331,9 +332,38 @@ audio.addEventListener("error", () => {
   if (player.phase === "dj") { toast("The DJ clip could not be played; going to the song.", true); player.playSong(); }
   else if (player.phase === "song") { toast("That song file could not be played; skipping.", true); player.next(); }
 });
-audio.addEventListener("timeupdate", () => {
-  const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
-  $("np-bar").style.width = pct + "%";
+function updateProgress(percent) {
+  const safe = Math.max(0, Math.min(100, Number.isFinite(percent) ? percent : 0));
+  $("np-bar").style.width = `${safe}%`;
+  $("player-progress").setAttribute("aria-valuenow", String(Math.round(safe)));
+  const current = Number.isFinite(audio.currentTime) ? fmtDur(audio.currentTime) : "0:00";
+  const duration = Number.isFinite(audio.duration) ? fmtDur(audio.duration) : "0:00";
+  $("player-progress").setAttribute("aria-valuetext", `${current} of ${duration}`);
+}
+function syncProgress() {
+  updateProgress(audio.duration > 0 ? (audio.currentTime / audio.duration) * 100 : 0);
+}
+audio.addEventListener("timeupdate", syncProgress);
+audio.addEventListener("durationchange", syncProgress);
+audio.addEventListener("loadedmetadata", syncProgress);
+
+function seekToFraction(fraction) {
+  if (!Number.isFinite(audio.duration) || audio.duration <= 0 || !audio.getAttribute("src")) return;
+  audio.currentTime = Math.max(0, Math.min(1, fraction)) * audio.duration;
+  syncProgress();
+}
+$("player-progress").addEventListener("click", (event) => {
+  const rect = event.currentTarget.getBoundingClientRect();
+  seekToFraction((event.clientX - rect.left) / rect.width);
+});
+$("player-progress").addEventListener("keydown", (event) => {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+  if (event.key === "Home") return seekToFraction(0);
+  if (event.key === "End") return seekToFraction(1);
+  if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+  audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5)));
+  syncProgress();
 });
 
 function updatePlayButton() {

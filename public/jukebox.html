@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/static/combo.css">
   <link rel="stylesheet" href="/static/navigation.css">
   <link rel="stylesheet" href="/static/control-cleanup.css">
+  <link rel="stylesheet" href="/static/progress.css">
 </head>
 <body>
   <div class="app-shell">
@@ -105,7 +106,7 @@
     <img id="player-cover" src="/static/default-cover.svg" alt="">
     <div class="player-copy"><strong id="player-title">AI Jukebox</strong><span id="player-sub">Ready to play</span></div>
     <div class="player-controls"><button id="btn-play" class="player-main" aria-label="Play">▶</button><button id="btn-skip" aria-label="Skip">▶</button></div>
-    <div class="progress"><div id="np-bar"></div></div>
+    <div id="player-progress" class="progress" role="slider" tabindex="0" aria-label="Song progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="np-bar"></div></div>
   </section>
 
   <dialog id="lyrics-dialog"><h3 id="lyrics-title"></h3><pre id="lyrics-body"></pre><form method="dialog"><button>Close</button></form></dialog>
