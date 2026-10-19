@@ -10,6 +10,48 @@ let libraryFilter = "";
 const byId = () => Object.fromEntries(tracks.map((t) => [t.id, t]));
 let voiceId = "default";
 
+const comboOptions = {
+  style: ["indie pop", "lo-fi hip hop", "synthwave", "acoustic folk", "funk", "cinematic orchestral", "country", "jazz trio", "EDM", "punk rock", "R&B", "ambient", "disco", "reggae", "trap", "dream pop"],
+  mood: ["hopeful", "melancholy", "energetic", "dreamy", "chill", "triumphant", "mysterious", "romantic", "joyful", "nostalgic", "peaceful", "dramatic", "dark", "playful", "confident", "bittersweet"],
+};
+
+function setupCombobox(kind) {
+  const root = document.querySelector(`[data-combo="${kind}"]`);
+  const input = root.querySelector("input");
+  const menu = root.querySelector(".combo-menu");
+  const toggle = root.querySelector(".combo-toggle");
+  let active = -1;
+
+  function options() {
+    const query = input.value.trim().toLowerCase();
+    return comboOptions[kind].filter((value) => !query || value.includes(query));
+  }
+  function render() {
+    const visible = options();
+    active = Math.min(active, visible.length - 1);
+    menu.innerHTML = visible.length ? visible.map((value, index) => `<button type="button" class="combo-option${index === active ? " active" : ""}${value === input.value.toLowerCase() ? " selected" : ""}" role="option" aria-selected="${value === input.value.toLowerCase()}" data-value="${esc(value)}">${esc(value)}</button>`).join("") : '<div class="combo-empty">No matches — keep typing to use your own.</div>';
+  }
+  function open() { render(); root.classList.add("open"); input.setAttribute("aria-expanded", "true"); }
+  function close() { root.classList.remove("open"); input.setAttribute("aria-expanded", "false"); active = -1; }
+  function choose(value) { input.value = value; input.dispatchEvent(new Event("change", { bubbles: true })); close(); input.focus(); }
+
+  toggle.addEventListener("click", () => root.classList.contains("open") ? close() : (input.focus(), open()));
+  input.addEventListener("focus", open);
+  input.addEventListener("input", () => { active = -1; open(); });
+  input.addEventListener("keydown", (event) => {
+    const visible = options();
+    if (event.key === "ArrowDown") { event.preventDefault(); active = Math.min(active + 1, visible.length - 1); open(); }
+    else if (event.key === "ArrowUp") { event.preventDefault(); active = Math.max(active - 1, 0); open(); }
+    else if (event.key === "Enter" && active >= 0) { event.preventDefault(); choose(visible[active]); }
+    else if (event.key === "Escape") close();
+  });
+  menu.addEventListener("mousedown", (event) => {
+    const option = event.target.closest(".combo-option");
+    if (option) { event.preventDefault(); choose(option.dataset.value); }
+  });
+  document.addEventListener("mousedown", (event) => { if (!root.contains(event.target)) close(); });
+}
+
 // ---------------------------------------------------------------- helpers
 function toast(msg, isError = false) {
   const el = $("toast");
@@ -397,6 +439,9 @@ $("voice-reset").addEventListener("click", async () => {
 });
 
 // ---------------------------------------------------------------- boot
+setupCombobox("style");
+setupCombobox("mood");
+
 (async function boot() {
   try {
     const st = await api("/api/status");
