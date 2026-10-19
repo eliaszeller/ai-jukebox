@@ -1,0 +1,6 @@
+.topbar { justify-content: center; }
+.player-bar { grid-template-columns: 48px minmax(140px,1fr) auto; }
+.progress { right: 22px; }
+@media (max-width:760px) {
+  .player-bar { grid-template-columns: 42px minmax(0,1fr) auto; }
+}

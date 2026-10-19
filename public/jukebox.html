@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/static/style.css">
   <link rel="stylesheet" href="/static/combo.css">
   <link rel="stylesheet" href="/static/navigation.css">
+  <link rel="stylesheet" href="/static/control-cleanup.css">
 </head>
 <body>
   <div class="app-shell">
@@ -37,9 +38,7 @@
 
     <section class="workspace">
       <header class="topbar">
-        <button class="circle-btn" aria-label="Back">‹</button>
         <div class="wordmark"><span class="mark">♫</span> AI Jukebox</div>
-        <div class="top-actions"><button class="circle-btn" aria-label="Add">＋</button><button class="circle-btn" aria-label="More">•••</button></div>
       </header>
 
       <main class="content">
@@ -105,8 +104,7 @@
   <section class="player-bar" aria-label="Playback controls">
     <img id="player-cover" src="/static/default-cover.svg" alt="">
     <div class="player-copy"><strong id="player-title">AI Jukebox</strong><span id="player-sub">Ready to play</span></div>
-    <div class="player-controls"><button id="btn-prev" disabled aria-label="Previous">◀</button><button id="btn-play" class="player-main" aria-label="Play">▶</button><button id="btn-skip" aria-label="Skip">▶</button></div>
-    <button class="player-more" aria-label="More options">•••</button><span class="volume">◖))</span>
+    <div class="player-controls"><button id="btn-play" class="player-main" aria-label="Play">▶</button><button id="btn-skip" aria-label="Skip">▶</button></div>
     <div class="progress"><div id="np-bar"></div></div>
   </section>
 
