@@ -306,6 +306,7 @@ const player = {
 
   setPhase(phase, t) {
     this.phase = phase;
+    const playerBar = document.querySelector(".player-bar");
     const label = { idle: "Off air", "dj-loading": "DJ warming up", dj: "On air · DJ", song: "On air · Now playing", ended: "End of queue" }[phase];
     $("np-phase").textContent = label;
     $("np-phase").className = "phase" + (phase === "dj" || phase === "song" ? " onair" : "");
@@ -313,11 +314,26 @@ const player = {
       $("np-title").textContent = t.title;
       $("np-sub").textContent = `${t.style} · ${t.mood} · ${t.vocal ? "vocal" : "instrumental"}`;
       $("np-cover").src = t.cover_url || PLACEHOLDER;
-      $("player-cover").src = t.cover_url || PLACEHOLDER;
-      $("player-title").textContent = t.title;
-      $("player-sub").textContent = `${t.style} · ${t.mood}`;
+      if (phase === "dj" || phase === "dj-loading") {
+        $("player-cover").src = PLACEHOLDER;
+        $("player-title").textContent = "AI Jukebox";
+        $("player-sub").textContent = "DJ Radio";
+        playerBar.setAttribute("aria-label", "DJ Radio playback controls");
+        if (phase === "dj-loading") updateProgress(0);
+      } else {
+        $("player-cover").src = t.cover_url || PLACEHOLDER;
+        $("player-title").textContent = t.title;
+        $("player-sub").textContent = `${t.style} · ${t.mood}`;
+        playerBar.setAttribute("aria-label", "Song playback controls");
+      }
     }
-    if (phase === "ended") { $("np-dj").textContent = "Queue a song or press play to start again."; }
+    if (phase === "ended") {
+      $("np-dj").textContent = "Queue a song or press play to start again.";
+      $("player-cover").src = PLACEHOLDER;
+      $("player-title").textContent = "AI Jukebox";
+      $("player-sub").textContent = "Ready to play";
+      playerBar.setAttribute("aria-label", "Playback controls");
+    }
     if (phase === "song") $("np-dj").textContent = $("np-dj").textContent;  // keep DJ line visible
     $("btn-skip").disabled = !(phase === "dj" || phase === "dj-loading" || phase === "song");
   },
