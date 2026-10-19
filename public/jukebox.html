@@ -1,101 +1,103 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Jukebox</title>
-<link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Jukebox</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header class="masthead">
-  <div class="brand"><span class="dial"></span><h1>AI Jukebox</h1><span class="freq">FM 64.18</span></div>
-  <div id="config-banner" class="banner hidden"></div>
-</header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="window-dots"><span></span><span></span><span></span></div>
+      <label class="search-box" aria-label="Search library">
+        <span>⌕</span><input id="library-search" type="search" placeholder="Search">
+      </label>
+      <nav>
+        <a class="active" href="#library-section"><span>⌂</span> Home</a>
+        <a href="#create-section"><span>✦</span> Create</a>
+        <a href="#library-section"><span>▦</span> Library</a>
+        <a href="#queue-panel"><span>≋</span> Up Next</a>
+      </nav>
+      <p class="nav-label">Library</p>
+      <nav>
+        <a href="#library-section"><span>◷</span> Recently Added</a>
+        <a href="#library-section"><span>♫</span> Songs</a>
+        <a href="#create-section"><span>▣</span> Cover Studio</a>
+      </nav>
+      <p class="nav-label">AI studio</p>
+      <nav>
+        <a href="#create-section"><span>⚡</span> Song Generator</a>
+        <a href="#voice-studio"><span>◉</span> DJ Voice</a>
+      </nav>
+      <div class="profile"><span class="avatar">EZ</span><span>AI Jukebox</span></div>
+    </aside>
 
-<section class="deck" aria-label="Now playing">
-  <img id="np-cover" class="np-cover" src="/static/placeholder.svg" alt="">
-  <div class="np-info">
-    <div id="np-phase" class="phase">Off air</div>
-    <h2 id="np-title">Press play to start the show</h2>
-    <p id="np-sub" class="muted"></p>
-    <p id="np-dj" class="dj-caption"></p>
+    <section class="workspace">
+      <header class="topbar">
+        <button class="circle-btn" aria-label="Back">‹</button>
+        <div class="wordmark"><span class="mark">♫</span> AI Jukebox</div>
+        <div class="top-actions"><button class="circle-btn" aria-label="Add">＋</button><button class="circle-btn" aria-label="More">•••</button></div>
+      </header>
+
+      <main class="content">
+        <div id="config-banner" class="banner hidden"></div>
+        <section class="hero" aria-label="Now playing">
+          <div class="hero-art-wrap"><img id="np-cover" class="hero-art" src="/static/placeholder.svg" alt="Current album cover"></div>
+          <div class="hero-copy">
+            <p id="np-phase" class="eyebrow">AI RADIO</p>
+            <h1 id="np-title">Your personal AI radio station</h1>
+            <p id="np-sub" class="artist-line">Original songs, cover art and live DJ commentary</p>
+            <p id="np-dj" class="dj-caption">Choose a track or press play to start the show.</p>
+            <div class="hero-actions"><button id="hero-play" class="play-pill">▶ Play</button><button class="soft-pill" onclick="document.getElementById('create-section').scrollIntoView({behavior:'smooth'})">＋ Create song</button></div>
+          </div>
+        </section>
+
+        <section id="library-section" class="section-block">
+          <div class="section-heading"><div><p class="eyebrow">YOUR COLLECTION</p><h2>Library <span id="lib-count" class="count"></span></h2></div><button id="queue-all" class="text-btn">Play all</button></div>
+          <div id="library" class="library"></div>
+        </section>
+
+        <section id="create-section" class="studio-card">
+          <div class="studio-intro"><span class="studio-icon">✦</span><p class="eyebrow">AI STUDIO</p><h2>Create a song</h2><p>Choose a sound and mood. The studio writes, composes, and paints a cover for your original track.</p></div>
+          <form id="song-form" class="song-form">
+            <div class="field-row"><label>Style<input id="f-style" list="styles" required maxlength="120" value="indie pop"></label><label>Mood<input id="f-mood" list="moods" required maxlength="80" value="hopeful"></label></div>
+            <datalist id="styles"><option>indie pop</option><option>lo-fi hip hop</option><option>synthwave</option><option>acoustic folk</option><option>funk</option><option>cinematic orchestral</option><option>country</option><option>jazz trio</option><option>EDM</option><option>punk rock</option></datalist>
+            <datalist id="moods"><option>hopeful</option><option>melancholy</option><option>energetic</option><option>dreamy</option><option>chill</option><option>triumphant</option><option>mysterious</option><option>romantic</option></datalist>
+            <label>Duration <span class="range-value"><output id="f-dur-out">45</output> sec</span><input id="f-duration" type="range" min="15" max="180" step="5" value="45"></label>
+            <fieldset class="toggle"><legend>Track type</legend><label><input type="radio" name="vocal" value="1" checked> Vocal</label><label><input type="radio" name="vocal" value="0"> Instrumental</label></fieldset>
+            <div class="field-row"><label>Theme <span class="optional">optional</span><input id="f-theme" maxlength="300" placeholder="A road trip at sunrise"></label><label>Title <span class="optional">optional</span><input id="f-title" maxlength="80" placeholder="Let AI choose"></label></div>
+            <label class="check"><input id="f-autoqueue" type="checkbox" checked> Add to Up Next when ready</label>
+            <button type="submit" class="primary">Generate song + cover</button>
+          </form>
+          <div class="generation"><p class="eyebrow">GENERATION STATUS</p><ul id="jobs" class="jobs"><li class="muted">No songs generating.</li></ul></div>
+        </section>
+
+        <section id="voice-studio" class="voice-card">
+          <div><p class="eyebrow">ON-AIR PERSONALITY</p><h2>DJ voice</h2><p>Use the default host or upload a short voice sample you have permission to use.</p></div>
+          <div class="voice"><span id="voice-name" class="pill">Default voice</span><label class="file-btn">Upload voice<input id="voice-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"></label><button id="voice-reset" class="text-btn hidden">Use default</button><p id="voice-msg" class="msg"></p></div>
+        </section>
+      </main>
+    </section>
+
+    <aside id="queue-panel" class="queue-panel">
+      <div class="queue-head"><div><p class="eyebrow">AUTOPLAY</p><h2>Up Next</h2></div><button id="queue-clear" class="text-btn">Clear</button></div>
+      <p class="queue-note">Your AI DJ introduces every track.</p>
+      <ol id="queue" class="queue"></ol>
+    </aside>
   </div>
-  <div class="controls">
-    <button id="btn-play" class="big" aria-label="Play">&#9654;</button>
-    <button id="btn-skip" aria-label="Skip">&#9197;</button>
-  </div>
-  <div class="progress"><div id="np-bar"></div></div>
-</section>
 
-<main class="grid">
-  <section class="panel" aria-label="Create a song">
-    <h3>Create a song</h3>
-    <form id="song-form">
-      <label>Style
-        <input id="f-style" list="styles" required maxlength="120" placeholder="e.g. indie pop" value="indie pop">
-        <datalist id="styles">
-          <option>indie pop</option><option>lo-fi hip hop</option><option>synthwave</option>
-          <option>acoustic folk</option><option>funk</option><option>cinematic orchestral</option>
-          <option>country</option><option>jazz trio</option><option>EDM</option><option>punk rock</option>
-        </datalist>
-      </label>
-      <label>Mood
-        <input id="f-mood" list="moods" required maxlength="80" placeholder="e.g. hopeful" value="hopeful">
-        <datalist id="moods">
-          <option>hopeful</option><option>melancholy</option><option>energetic</option><option>dreamy</option>
-          <option>chill</option><option>triumphant</option><option>mysterious</option><option>romantic</option>
-        </datalist>
-      </label>
-      <label>Duration: <output id="f-dur-out">45</output> s
-        <input id="f-duration" type="range" min="15" max="180" step="5" value="45">
-      </label>
-      <fieldset class="toggle">
-        <legend>Track type</legend>
-        <label><input type="radio" name="vocal" value="1" checked> Vocal (AI lyrics)</label>
-        <label><input type="radio" name="vocal" value="0"> Instrumental</label>
-      </fieldset>
-      <label>Theme <span class="muted">(optional)</span>
-        <input id="f-theme" maxlength="300" placeholder="e.g. a road trip at sunrise">
-      </label>
-      <label>Title <span class="muted">(optional, AI picks one otherwise)</span>
-        <input id="f-title" maxlength="80">
-      </label>
-      <label class="check"><input id="f-autoqueue" type="checkbox" checked> Add to the queue when ready</label>
-      <button type="submit" class="primary">Generate song + cover</button>
-    </form>
-    <h4>Generation status</h4>
-    <ul id="jobs" class="jobs"><li class="muted">No songs generating.</li></ul>
-
-    <h3>DJ voice</h3>
-    <p class="muted">The DJ uses Chatterbox's default voice. Upload a 5–20 s MP3 or WAV of a voice you have permission to use to customize it.</p>
-    <div class="voice">
-      <span id="voice-name" class="pill">Default voice</span>
-      <label class="file-btn">Upload voice<input id="voice-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"></label>
-      <button id="voice-reset" class="link hidden">Use default</button>
-    </div>
-    <p id="voice-msg" class="msg"></p>
+  <section class="player-bar" aria-label="Playback controls">
+    <img id="player-cover" src="/static/placeholder.svg" alt="">
+    <div class="player-copy"><strong id="player-title">AI Jukebox</strong><span id="player-sub">Ready to play</span></div>
+    <div class="player-controls"><button id="btn-prev" disabled aria-label="Previous">◀</button><button id="btn-play" class="player-main" aria-label="Play">▶</button><button id="btn-skip" aria-label="Skip">▶</button></div>
+    <button class="player-more" aria-label="More options">•••</button><span class="volume">◖))</span>
+    <div class="progress"><div id="np-bar"></div></div>
   </section>
 
-  <section class="panel" aria-label="Library">
-    <h3>Library <span id="lib-count" class="muted"></span></h3>
-    <div id="library" class="library"></div>
-  </section>
-
-  <section class="panel" aria-label="Queue">
-    <h3>Up next</h3>
-    <ol id="queue" class="queue"></ol>
-    <button id="queue-all" class="link">Queue whole library</button>
-    <button id="queue-clear" class="link">Clear queue</button>
-  </section>
-</main>
-
-<dialog id="lyrics-dialog">
-  <h3 id="lyrics-title"></h3>
-  <pre id="lyrics-body"></pre>
-  <form method="dialog"><button>Close</button></form>
-</dialog>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<audio id="audio" preload="auto"></audio>
-<script src="/static/app.js"></script>
+  <dialog id="lyrics-dialog"><h3 id="lyrics-title"></h3><pre id="lyrics-body"></pre><form method="dialog"><button>Close</button></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <audio id="audio" preload="auto"></audio>
+  <script src="/static/app.js"></script>
 </body>
 </html>

@@ -6,6 +6,7 @@ const audio = $("audio");
 const PLACEHOLDER = "/static/placeholder.svg";
 
 let tracks = [];                 // library
+let libraryFilter = "";
 const byId = () => Object.fromEntries(tracks.map((t) => [t.id, t]));
 let voiceId = "default";
 
@@ -51,7 +52,9 @@ function renderLibrary() {
   const lib = $("library");
   if (!tracks.length) { lib.innerHTML = '<p class="muted">No songs yet.</p>'; return; }
   const current = player.queue[player.index];
-  lib.innerHTML = tracks.map((t) => `
+  const shown = tracks.filter((t) => `${t.title} ${t.style} ${t.mood}`.toLowerCase().includes(libraryFilter));
+  if (!shown.length) { lib.innerHTML = '<p class="muted">No matching songs.</p>'; return; }
+  lib.innerHTML = shown.map((t) => `
     <article class="card ${t.id === current ? "playing" : ""}" data-id="${t.id}">
       <img src="${esc(t.cover_url || PLACEHOLDER)}" alt="Cover art for ${esc(t.title)}" loading="lazy">
       <div class="body">
@@ -216,6 +219,9 @@ const player = {
       $("np-title").textContent = t.title;
       $("np-sub").textContent = `${t.style} · ${t.mood} · ${t.vocal ? "vocal" : "instrumental"}`;
       $("np-cover").src = t.cover_url || PLACEHOLDER;
+      $("player-cover").src = t.cover_url || PLACEHOLDER;
+      $("player-title").textContent = t.title;
+      $("player-sub").textContent = `${t.style} · ${t.mood}`;
     }
     if (phase === "ended") { $("np-dj").textContent = "Queue a song or press play to start again."; }
     if (phase === "song") $("np-dj").textContent = $("np-dj").textContent;  // keep DJ line visible
@@ -241,8 +247,10 @@ function updatePlayButton() {
   const playing = !player.paused && player.phase !== "idle" && player.phase !== "ended";
   $("btn-play").innerHTML = playing ? "&#10074;&#10074;" : "&#9654;";
   $("btn-play").setAttribute("aria-label", playing ? "Pause" : "Play");
+  $("hero-play").textContent = playing ? "Ⅱ Pause" : "▶ Play";
 }
 $("btn-play").addEventListener("click", () => player.toggle());
+$("hero-play").addEventListener("click", () => player.toggle());
 $("btn-skip").addEventListener("click", () => player.skip());
 $("btn-skip").disabled = true;
 
@@ -269,6 +277,11 @@ $("queue-clear").addEventListener("click", () => {
   player.queue = player.index >= 0 && player.index < player.queue.length ? [player.queue[player.index]] : [];
   player.index = player.queue.length ? 0 : -1;
   renderQueue();
+});
+
+$("library-search").addEventListener("input", (e) => {
+  libraryFilter = e.target.value.trim().toLowerCase();
+  renderLibrary();
 });
 
 // ---------------------------------------------------------------- generation jobs
