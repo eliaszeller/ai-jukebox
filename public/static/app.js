@@ -10,9 +10,51 @@ let libraryFilter = "";
 const byId = () => Object.fromEntries(tracks.map((t) => [t.id, t]));
 let voiceId = "default";
 
-const comboOptions = {
-  style: ["indie pop", "lo-fi hip hop", "synthwave", "acoustic folk", "funk", "cinematic orchestral", "country", "jazz trio", "EDM", "punk rock", "R&B", "ambient", "disco", "reggae", "trap", "dream pop"],
-  mood: ["hopeful", "melancholy", "energetic", "dreamy", "chill", "triumphant", "mysterious", "romantic", "joyful", "nostalgic", "peaceful", "dramatic", "dark", "playful", "confident", "bittersweet"],
+const comboGroups = {
+  style: {
+    "Pop": ["Dance Pop", "Indie Pop", "Synth-Pop", "Electropop", "Dream Pop", "Bedroom Pop", "Art Pop", "Hyperpop"],
+    "Hip-Hop / Rap": ["Trap", "Boom Bap", "Drill", "Cloud Rap", "Lo-Fi Hip-Hop", "Conscious Hip-Hop", "Melodic Rap", "Alternative Hip-Hop"],
+    "R&B / Soul": ["Contemporary R&B", "Alternative R&B", "Neo-Soul", "Soul", "Funk", "Quiet Storm", "New Jack Swing"],
+    "Rock": ["Alternative Rock", "Indie Rock", "Classic Rock", "Hard Rock", "Soft Rock", "Psychedelic Rock", "Garage Rock"],
+    "Electronic / EDM": ["House", "Deep House", "Tech House", "Progressive House", "Techno", "Trance", "Dubstep", "Drum and Bass", "Future Bass", "Melodic Techno"],
+    "Country": ["Contemporary Country", "Country Pop", "Outlaw Country", "Americana", "Bluegrass", "Country Rock", "Alt-Country"],
+    "Jazz": ["Smooth Jazz", "Bebop", "Cool Jazz", "Jazz Fusion", "Swing", "Vocal Jazz", "Acid Jazz"],
+    "Blues": ["Delta Blues", "Chicago Blues", "Electric Blues", "Blues Rock", "Soul Blues"],
+    "Folk / Acoustic": ["Indie Folk", "Contemporary Folk", "Singer-Songwriter", "Acoustic Pop", "Folk Rock"],
+    "Latin": ["Reggaeton", "Latin Pop", "Bachata", "Salsa", "Merengue", "Cumbia", "Latin Trap", "Regional Mexican"],
+    "Reggae / Caribbean": ["Roots Reggae", "Dancehall", "Dub", "Ska", "Soca", "Reggae Fusion"],
+    "Metal": ["Heavy Metal", "Metalcore", "Death Metal", "Black Metal", "Progressive Metal", "Nu Metal"],
+    "Punk / Alternative": ["Pop Punk", "Emo", "Post-Punk", "Hardcore Punk", "Grunge", "Shoegaze"],
+    "Classical / Instrumental": ["Baroque", "Romantic Classical", "Contemporary Classical", "Minimalism", "Orchestral", "Cinematic Orchestral", "Solo Piano"],
+    "Ambient / Experimental": ["Ambient", "Dark Ambient", "Drone", "Downtempo", "Trip-Hop", "Experimental Electronic"],
+    "Global": ["Afrobeats", "Amapiano", "Afro House", "K-Pop", "J-Pop", "Highlife", "Bossa Nova"],
+  },
+  mood: {
+    "Happy / Positive": ["Joyful", "Cheerful", "Uplifting", "Optimistic", "Playful", "Feel-Good", "Bright"],
+    "Sad / Emotional": ["Melancholic", "Heartbroken", "Sorrowful", "Somber", "Bittersweet", "Tearful", "Reflective"],
+    "Relaxed / Calm": ["Peaceful", "Mellow", "Chill", "Soothing", "Serene", "Tranquil", "Laid-Back"],
+    "Energetic / Intense": ["High-Energy", "Powerful", "Explosive", "Aggressive", "Driving", "Adrenaline-Fueled", "Intense"],
+    "Romantic / Intimate": ["Romantic", "Sensual", "Passionate", "Tender", "Intimate", "Warm", "Seductive"],
+    "Dark / Mysterious": ["Dark", "Ominous", "Haunting", "Sinister", "Eerie", "Suspenseful", "Brooding", "Mysterious"],
+    "Dreamy / Atmospheric": ["Ethereal", "Dreamy", "Hypnotic", "Floating", "Spacey", "Surreal", "Atmospheric"],
+    "Confident / Empowering": ["Confident", "Bold", "Triumphant", "Empowering", "Defiant", "Motivational", "Victorious"],
+    "Nostalgic / Sentimental": ["Nostalgic", "Wistful", "Sentimental", "Yearning", "Reflective", "Bittersweet"],
+    "Party / Dance": ["Euphoric", "Festive", "Groovy", "Bouncy", "Upbeat", "Celebratory", "Carefree"],
+    "Focus / Background": ["Minimal", "Unobtrusive", "Meditative", "Repetitive", "Gentle", "Contemplative"],
+    "Epic / Cinematic": ["Epic", "Dramatic", "Heroic", "Grand", "Majestic", "Tense", "Inspirational", "Adventurous", "Emotional"],
+    "Angry / Rebellious": ["Furious", "Hostile", "Rebellious", "Frustrated", "Raw", "Confrontational"],
+    "Cool / Stylish": ["Smooth", "Suave", "Slick", "Sophisticated", "Sultry", "Effortless", "Soulful"],
+    "Hopeful / Spiritual": ["Hopeful", "Reverent", "Spiritual", "Transcendent", "Healing", "Inspirational"],
+  },
+};
+
+const recommendedMoods = {
+  "deep house": ["Euphoric", "Hypnotic", "Groovy"], "alternative r&b": ["Sensual", "Dark", "Atmospheric"],
+  "indie folk": ["Nostalgic", "Warm", "Reflective"], "trap": ["Aggressive", "Confident", "Dark"],
+  "dream pop": ["Ethereal", "Dreamy", "Melancholic"], "country pop": ["Uplifting", "Romantic", "Carefree"],
+  "lo-fi hip-hop": ["Mellow", "Nostalgic", "Peaceful"], "melodic techno": ["Hypnotic", "Dramatic", "Euphoric"],
+  "neo-soul": ["Smooth", "Intimate", "Soulful"], "shoegaze": ["Dreamy", "Intense", "Wistful"],
+  "afro house": ["Groovy", "Hypnotic", "Uplifting"], "cinematic orchestral": ["Epic", "Heroic", "Emotional"],
 };
 
 function setupCombobox(kind) {
@@ -22,14 +64,23 @@ function setupCombobox(kind) {
   const toggle = root.querySelector(".combo-toggle");
   let active = -1;
 
-  function options() {
+  function groups() {
     const query = input.value.trim().toLowerCase();
-    return comboOptions[kind].filter((value) => !query || value.includes(query));
+    const base = Object.entries(comboGroups[kind]).map(([label, values]) => [label, values.filter((value) => !query || value.toLowerCase().includes(query))]).filter(([, values]) => values.length);
+    if (kind === "mood" && !query) {
+      const matches = recommendedMoods[$("f-style").value.trim().toLowerCase()] || [];
+      if (matches.length) return [["Recommended for this style", matches], ...base];
+    }
+    return base;
+  }
+  function options() {
+    return groups().flatMap(([, values]) => values);
   }
   function render() {
     const visible = options();
     active = Math.min(active, visible.length - 1);
-    menu.innerHTML = visible.length ? visible.map((value, index) => `<button type="button" class="combo-option${index === active ? " active" : ""}${value === input.value.toLowerCase() ? " selected" : ""}" role="option" aria-selected="${value === input.value.toLowerCase()}" data-value="${esc(value)}">${esc(value)}</button>`).join("") : '<div class="combo-empty">No matches — keep typing to use your own.</div>';
+    let flatIndex = 0;
+    menu.innerHTML = visible.length ? groups().map(([label, values]) => `<div class="combo-group"><div class="combo-group-label">${esc(label)}</div>${values.map((value) => { const index = flatIndex++; const selected = value.toLowerCase() === input.value.toLowerCase(); return `<button type="button" class="combo-option${index === active ? " active" : ""}${selected ? " selected" : ""}" role="option" aria-selected="${selected}" data-value="${esc(value)}">${esc(value)}</button>`; }).join("")}</div>`).join("") : '<div class="combo-empty">No matches — keep typing to use your own.</div>';
   }
   function open() { render(); root.classList.add("open"); input.setAttribute("aria-expanded", "true"); }
   function close() { root.classList.remove("open"); input.setAttribute("aria-expanded", "false"); active = -1; }

@@ -4,6 +4,8 @@
 .combo-toggle:hover { background: var(--soft); color: var(--accent); }
 .combo-menu { display: none; position: absolute; z-index: 50; left: 0; right: 0; top: calc(100% + 5px); max-height: 220px; overflow: auto; padding: 6px; background: #fff; border: 1px solid #dddde2; border-radius: 12px; box-shadow: 0 15px 36px rgba(0,0,0,.16); }
 .combo.open .combo-menu { display: block; }
+.combo-group + .combo-group { border-top: 1px solid #eeeeef; margin-top: 5px; padding-top: 5px; }
+.combo-group-label { position: sticky; top: -6px; z-index: 1; padding: 7px 10px 5px; background: rgba(255,255,255,.96); color: #8b8b90; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .combo-option { display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; background: transparent; color: var(--ink); padding: 9px 10px; border-radius: 8px; text-align: left; cursor: pointer; font-size: 13px; }
 .combo-option:hover, .combo-option.active { background: #fff0f3; color: var(--accent); }
 .combo-option.selected::after { content: "✓"; font-weight: 800; }
