@@ -1,0 +1,400 @@
+"use strict";
+// AI Jukebox front end. All class-service calls go through our own server (/api/...).
+
+const $ = (id) => document.getElementById(id);
+const audio = $("audio");
+const PLACEHOLDER = "/static/placeholder.svg";
+
+let tracks = [];                 // library
+const byId = () => Object.fromEntries(tracks.map((t) => [t.id, t]));
+let voiceId = "default";
+
+// ---------------------------------------------------------------- helpers
+function toast(msg, isError = false) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.className = "toast show" + (isError ? " error" : "");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => (el.className = "toast"), isError ? 7000 : 3500);
+}
+async function api(path, opts = {}) {
+  let res;
+  try {
+    res = await fetch(path, opts);
+  } catch (e) {
+    throw new Error("Can't reach the Jukebox server. Is it still running?");
+  }
+  let body = null;
+  try { body = await res.json(); } catch (_) {}
+  if (!res.ok) {
+    let msg = body && (body.error || body.detail);
+    if (Array.isArray(msg)) msg = msg.map((d) => d.msg).join("; ");
+    const err = new Error(msg || `Request failed (${res.status})`);
+    err.body = body;
+    throw err;
+  }
+  return body;
+}
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtDur = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+
+// ---------------------------------------------------------------- library
+async function loadLibrary() {
+  const data = await api("/api/library");
+  tracks = data.tracks;
+  renderLibrary();
+  renderQueue();
+}
+
+function renderLibrary() {
+  $("lib-count").textContent = `(${tracks.length})`;
+  const lib = $("library");
+  if (!tracks.length) { lib.innerHTML = '<p class="muted">No songs yet.</p>'; return; }
+  const current = player.queue[player.index];
+  lib.innerHTML = tracks.map((t) => `
+    <article class="card ${t.id === current ? "playing" : ""}" data-id="${t.id}">
+      <img src="${esc(t.cover_url || PLACEHOLDER)}" alt="Cover art for ${esc(t.title)}" loading="lazy">
+      <div class="body">
+        <div class="t">${esc(t.title)}</div>
+        <div class="meta">${esc(t.style)} · ${esc(t.mood)} · ${fmtDur(t.duration)}</div>
+        <div class="badges">
+          <span class="badge">${t.vocal ? "Vocal" : "Instrumental"}</span>
+          ${t.sample ? '<span class="badge sample">Sample</span>' : ""}
+        </div>
+        ${t.cover_error ? `<div class="err">Cover failed: ${esc(t.cover_error)}</div>` : ""}
+        <div class="actions">
+          <button data-act="play">Play now</button>
+          <button data-act="queue">+ Queue</button>
+          ${t.lyrics ? '<button data-act="lyrics">Lyrics</button>' : ""}
+          ${!t.sample ? '<button data-act="cover">New cover</button>' : ""}
+        </div>
+      </div>
+    </article>`).join("");
+}
+
+$("library").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const id = btn.closest(".card").dataset.id;
+  const t = byId()[id];
+  const act = btn.dataset.act;
+  if (act === "play") player.playNow(id);
+  if (act === "queue") { player.enqueue(id); toast(`Queued “${t.title}”`); }
+  if (act === "lyrics") {
+    $("lyrics-title").textContent = t.title;
+    $("lyrics-body").textContent = t.lyrics;
+    $("lyrics-dialog").showModal();
+  }
+  if (act === "cover") {
+    try {
+      const job = await api(`/api/tracks/${id}/cover`, { method: "POST" });
+      jobs.track(job);
+      await loadLibrary();
+    } catch (err) { toast(err.message, true); }
+  }
+});
+
+// ---------------------------------------------------------------- player
+// One <audio> element plays everything, strictly in sequence:
+//   DJ intro for track i  ->  track i  ->  DJ intro for track i+1  ->  track i+1 ...
+// `token` invalidates stale async work (e.g. a DJ clip that finishes loading after Skip).
+const player = {
+  queue: [], index: -1, phase: "idle", token: 0, paused: false, djCache: new Map(),
+
+  key(i) { return `${this.queue[i]}|${this.queue[i - 1] || ""}|${voiceId}`; },
+
+  fetchDJ(i) {
+    const k = this.key(i);
+    if (!this.djCache.has(k)) {
+      const p = api("/api/dj", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ track_id: this.queue[i], previous_id: this.queue[i - 1] || null }),
+      }).catch((err) => { this.djCache.delete(k); return { error: err.message, text: err.body && err.body.text }; });
+      this.djCache.set(k, p);
+    }
+    return this.djCache.get(k);
+  },
+
+  async startAt(i) {
+    const token = ++this.token;
+    audio.pause();
+    this.index = i;
+    const t = byId()[this.queue[i]];
+    if (!t) return this.next();
+    this.setPhase("dj-loading", t);
+    $("np-dj").textContent = "The DJ is writing an intro…";
+    renderQueue(); renderLibrary();
+    const dj = await this.fetchDJ(i);
+    if (token !== this.token) return;          // user skipped / restarted meanwhile
+    if (dj && dj.audio_url) {
+      $("np-dj").textContent = `DJ: “${dj.text}”`;
+      this.setPhase("dj", t);
+      this.load(dj.audio_url);
+    } else {
+      $("np-dj").textContent = dj && dj.text ? `DJ (text only): “${dj.text}”` : "";
+      toast(`DJ commentary unavailable, playing the song. ${dj && dj.error ? dj.error : ""}`, true);
+      this.playSong(token);
+    }
+  },
+
+  playSong(token = ++this.token) {
+    this.token = token;
+    const t = byId()[this.queue[this.index]];
+    this.setPhase("song", t);
+    this.load(t.audio_url);
+    if (this.index + 1 < this.queue.length) this.fetchDJ(this.index + 1);   // prefetch next intro
+  },
+
+  load(src) {
+    audio.src = src;
+    if (!this.paused) audio.play().catch((e) => {
+      if (e.name === "NotAllowedError") { this.paused = true; updatePlayButton(); toast("Press play to start audio."); }
+    });
+  },
+
+  next() {
+    if (this.index + 1 < this.queue.length) return this.startAt(this.index + 1);
+    ++this.token;
+    audio.pause(); audio.removeAttribute("src");
+    this.index = this.queue.length;
+    this.setPhase("ended");
+    renderQueue(); renderLibrary();
+  },
+
+  skip() {
+    if (this.phase === "dj" || this.phase === "dj-loading") return this.playSong();
+    if (this.phase === "song") return this.next();
+  },
+
+  toggle() {
+    if (this.phase === "idle" || this.phase === "ended") {
+      if (this.index >= this.queue.length || !this.queue.length) { this.queue = tracks.map((t) => t.id); this.index = -1; }
+      if (!this.queue.length) return toast("The library is empty.", true);
+      this.paused = false;
+      updatePlayButton();
+      return this.startAt(0);
+    }
+    this.paused = !this.paused;
+    if (this.paused) audio.pause();
+    else if (audio.getAttribute("src")) audio.play().catch(() => {});
+    updatePlayButton();
+  },
+
+  enqueue(id) {
+    if (this.index >= this.queue.length) { this.queue = []; this.index = -1; }
+    this.queue.push(id);
+    renderQueue();
+  },
+
+  playNow(id) {
+    if (this.index >= this.queue.length) { this.queue = []; this.index = -1; }
+    this.queue.splice(this.index + 1, 0, id);
+    this.paused = false;
+    updatePlayButton();
+    this.startAt(this.index + 1);
+  },
+
+  remove(pos) {
+    if (pos === this.index) return this.skipToNextAfterRemove(pos);
+    this.queue.splice(pos, 1);
+    if (pos < this.index) this.index--;
+    renderQueue();
+  },
+
+  skipToNextAfterRemove(pos) {
+    this.queue.splice(pos, 1);
+    this.index--;
+    this.next();
+  },
+
+  setPhase(phase, t) {
+    this.phase = phase;
+    const label = { idle: "Off air", "dj-loading": "DJ warming up", dj: "On air · DJ", song: "On air · Now playing", ended: "End of queue" }[phase];
+    $("np-phase").textContent = label;
+    $("np-phase").className = "phase" + (phase === "dj" || phase === "song" ? " onair" : "");
+    if (t) {
+      $("np-title").textContent = t.title;
+      $("np-sub").textContent = `${t.style} · ${t.mood} · ${t.vocal ? "vocal" : "instrumental"}`;
+      $("np-cover").src = t.cover_url || PLACEHOLDER;
+    }
+    if (phase === "ended") { $("np-dj").textContent = "Queue a song or press play to start again."; }
+    if (phase === "song") $("np-dj").textContent = $("np-dj").textContent;  // keep DJ line visible
+    $("btn-skip").disabled = !(phase === "dj" || phase === "dj-loading" || phase === "song");
+  },
+};
+
+audio.addEventListener("ended", () => {
+  if (player.phase === "dj") player.playSong();
+  else if (player.phase === "song") player.next();
+});
+audio.addEventListener("error", () => {
+  if (!audio.getAttribute("src")) return;
+  if (player.phase === "dj") { toast("The DJ clip could not be played; going to the song.", true); player.playSong(); }
+  else if (player.phase === "song") { toast("That song file could not be played; skipping.", true); player.next(); }
+});
+audio.addEventListener("timeupdate", () => {
+  const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+  $("np-bar").style.width = pct + "%";
+});
+
+function updatePlayButton() {
+  const playing = !player.paused && player.phase !== "idle" && player.phase !== "ended";
+  $("btn-play").innerHTML = playing ? "&#10074;&#10074;" : "&#9654;";
+  $("btn-play").setAttribute("aria-label", playing ? "Pause" : "Play");
+}
+$("btn-play").addEventListener("click", () => player.toggle());
+$("btn-skip").addEventListener("click", () => player.skip());
+$("btn-skip").disabled = true;
+
+function renderQueue() {
+  const map = byId();
+  const q = $("queue");
+  if (!player.queue.length) { q.innerHTML = '<li class="muted">Empty. Press play to queue the whole library.</li>'; return; }
+  q.innerHTML = player.queue.map((id, i) => {
+    const cls = i === player.index ? "current" : i < player.index ? "done" : "";
+    const t = map[id];
+    return `<li class="${cls}"><span>${esc(t ? t.title : "(missing)")}</span>${i >= player.index ? `<button data-pos="${i}" aria-label="Remove">✕</button>` : ""}</li>`;
+  }).join("");
+}
+$("queue").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-pos]");
+  if (b) player.remove(Number(b.dataset.pos));
+});
+$("queue-all").addEventListener("click", () => {
+  if (player.index >= player.queue.length) { player.queue = []; player.index = -1; }
+  tracks.forEach((t) => player.queue.push(t.id));
+  renderQueue();
+});
+$("queue-clear").addEventListener("click", () => {
+  player.queue = player.index >= 0 && player.index < player.queue.length ? [player.queue[player.index]] : [];
+  player.index = player.queue.length ? 0 : -1;
+  renderQueue();
+});
+
+// ---------------------------------------------------------------- generation jobs
+const jobs = {
+  list: [], timer: null,
+  track(job) { this.list.unshift(job); this.render(); this.poll(); },
+  async poll() {
+    clearTimeout(this.timer);
+    const active = this.list.filter((j) => j.state === "queued" || j.state === "running");
+    for (const j of active) {
+      try {
+        const fresh = await api(`/api/jobs/${j.id}`);
+        if (fresh.state !== j.state && !["queued", "running"].includes(fresh.state)) this.finished(fresh);
+        Object.assign(j, fresh);
+      } catch (e) { /* transient; keep polling */ }
+    }
+    this.render();
+    if (this.list.some((j) => j.state === "queued" || j.state === "running")) this.timer = setTimeout(() => this.poll(), 2000);
+  },
+  async finished(job) {
+    await loadLibrary();
+    if (job.kind === "song" && job.track_id) {
+      const t = byId()[job.track_id];
+      toast(job.state === "failed" ? "Song generation failed." : `“${t ? t.title : "New song"}” is in the library.`, job.state === "failed");
+      if (t && job.state !== "failed" && $("f-autoqueue").checked) player.enqueue(t.id);
+    } else if (job.kind === "song") toast("Song generation failed. See status for details.", true);
+  },
+  render() {
+    const ul = $("jobs");
+    if (!this.list.length) { ul.innerHTML = '<li class="muted">No songs generating.</li>'; return; }
+    ul.innerHTML = this.list.slice(0, 8).map((j) => {
+      const p = j.params || {};
+      const name = (j.preview && j.preview.title) || p.title || (j.kind === "cover" ? `Cover for “${p.title}”` : `${p.style} / ${p.mood}`);
+      const running = j.state === "queued" || j.state === "running";
+      const wait = j.queue_position ? ` (waiting: #${j.queue_position} in line)` : "";
+      let status = "";
+      if (running) status = `<div class="step"><span class="spinner"></span>${esc(j.step)}${wait}</div>`;
+      else if (j.state === "done") status = '<div class="ok">✓ Ready in library</div>';
+      else if (j.state === "done_with_warning") status = `<div class="ok">✓ Song ready</div><div class="err">${esc(j.error)}</div><button data-cover="${j.track_id}">Retry cover</button>`;
+      else status = `<div class="err">${esc(j.error)}</div>${j.retryable !== false ? `<button data-retry="${j.id}">Retry</button>` : ""} <button data-dismiss="${j.id}" class="link">Dismiss</button>`;
+      return `<li><div class="job-title">${esc(name)}</div>${status}</li>`;
+    }).join("");
+  },
+};
+$("jobs").addEventListener("click", async (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.dismiss) { jobs.list = jobs.list.filter((j) => j.id !== b.dataset.dismiss); jobs.render(); }
+  if (b.dataset.retry) {
+    const old = jobs.list.find((j) => j.id === b.dataset.retry);
+    jobs.list = jobs.list.filter((j) => j !== old);
+    submitSong(old.params);
+  }
+  if (b.dataset.cover) {
+    try { jobs.track(await api(`/api/tracks/${b.dataset.cover}/cover`, { method: "POST" })); await loadLibrary(); }
+    catch (err) { toast(err.message, true); }
+  }
+});
+
+async function submitSong(params) {
+  const pending = { id: `pending-${Date.now()}`, kind: "song", params, state: "running", step: "Generating lyrics, music, and cover art" };
+  jobs.list.unshift(pending);
+  jobs.render();
+  try {
+    const job = await api("/api/songs", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(params),
+    });
+    Object.assign(pending, job);
+    jobs.render();
+    await jobs.finished(job);
+  } catch (err) {
+    Object.assign(pending, { state: "failed", error: err.message, retryable: true });
+    jobs.render();
+    toast(err.message, true);
+  }
+}
+
+$("f-duration").addEventListener("input", (e) => ($("f-dur-out").value = e.target.value));
+$("song-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  submitSong({
+    style: $("f-style").value.trim(), mood: $("f-mood").value.trim(),
+    duration: Number($("f-duration").value),
+    vocal: document.querySelector('input[name="vocal"]:checked').value === "1",
+    theme: $("f-theme").value.trim(), title: $("f-title").value.trim(),
+  });
+});
+
+// ---------------------------------------------------------------- DJ voice
+function showVoice(v) {
+  voiceId = v.id || "default";
+  $("voice-name").textContent = v.id ? `Custom: ${v.name}` : "Default voice";
+  $("voice-reset").classList.toggle("hidden", !v.id);
+}
+$("voice-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const msg = $("voice-msg");
+  if (!/\.(mp3|wav)$/i.test(file.name)) { msg.textContent = "Please choose an MP3 or WAV file."; msg.className = "msg error"; return; }
+  if (file.size > 10 * 1024 * 1024) { msg.textContent = "That file is larger than 10 MB."; msg.className = "msg error"; return; }
+  msg.textContent = "Uploading…"; msg.className = "msg";
+  const fd = new FormData();
+  fd.append("file", file);
+  try {
+    showVoice(await api("/api/voice", { method: "POST", body: fd }));
+    msg.textContent = "Custom voice set. Upcoming DJ intros will use it.";
+  } catch (err) { msg.textContent = err.message; msg.className = "msg error"; }
+});
+$("voice-reset").addEventListener("click", async () => {
+  try { showVoice(await api("/api/voice", { method: "DELETE" })); $("voice-msg").textContent = "Back to the default voice."; }
+  catch (err) { toast(err.message, true); }
+});
+
+// ---------------------------------------------------------------- boot
+(async function boot() {
+  try {
+    const st = await api("/api/status");
+    if (st.problems.length) {
+      const b = $("config-banner");
+      b.innerHTML = "<strong>Setup needed:</strong> " + st.problems.map(esc).join("; ") + ". See README → Setup.";
+      b.classList.remove("hidden");
+    }
+    $("f-duration").min = st.min_duration; $("f-duration").max = st.max_duration;
+    showVoice(await api("/api/voice"));
+    await loadLibrary();
+    jobs.render();
+  } catch (err) { toast(err.message, true); }
+})();

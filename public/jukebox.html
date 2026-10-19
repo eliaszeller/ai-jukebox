@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Jukebox</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="brand"><span class="dial"></span><h1>AI Jukebox</h1><span class="freq">FM 64.18</span></div>
+  <div id="config-banner" class="banner hidden"></div>
+</header>
+
+<section class="deck" aria-label="Now playing">
+  <img id="np-cover" class="np-cover" src="/static/placeholder.svg" alt="">
+  <div class="np-info">
+    <div id="np-phase" class="phase">Off air</div>
+    <h2 id="np-title">Press play to start the show</h2>
+    <p id="np-sub" class="muted"></p>
+    <p id="np-dj" class="dj-caption"></p>
+  </div>
+  <div class="controls">
+    <button id="btn-play" class="big" aria-label="Play">&#9654;</button>
+    <button id="btn-skip" aria-label="Skip">&#9197;</button>
+  </div>
+  <div class="progress"><div id="np-bar"></div></div>
+</section>
+
+<main class="grid">
+  <section class="panel" aria-label="Create a song">
+    <h3>Create a song</h3>
+    <form id="song-form">
+      <label>Style
+        <input id="f-style" list="styles" required maxlength="120" placeholder="e.g. indie pop" value="indie pop">
+        <datalist id="styles">
+          <option>indie pop</option><option>lo-fi hip hop</option><option>synthwave</option>
+          <option>acoustic folk</option><option>funk</option><option>cinematic orchestral</option>
+          <option>country</option><option>jazz trio</option><option>EDM</option><option>punk rock</option>
+        </datalist>
+      </label>
+      <label>Mood
+        <input id="f-mood" list="moods" required maxlength="80" placeholder="e.g. hopeful" value="hopeful">
+        <datalist id="moods">
+          <option>hopeful</option><option>melancholy</option><option>energetic</option><option>dreamy</option>
+          <option>chill</option><option>triumphant</option><option>mysterious</option><option>romantic</option>
+        </datalist>
+      </label>
+      <label>Duration: <output id="f-dur-out">45</output> s
+        <input id="f-duration" type="range" min="15" max="180" step="5" value="45">
+      </label>
+      <fieldset class="toggle">
+        <legend>Track type</legend>
+        <label><input type="radio" name="vocal" value="1" checked> Vocal (AI lyrics)</label>
+        <label><input type="radio" name="vocal" value="0"> Instrumental</label>
+      </fieldset>
+      <label>Theme <span class="muted">(optional)</span>
+        <input id="f-theme" maxlength="300" placeholder="e.g. a road trip at sunrise">
+      </label>
+      <label>Title <span class="muted">(optional, AI picks one otherwise)</span>
+        <input id="f-title" maxlength="80">
+      </label>
+      <label class="check"><input id="f-autoqueue" type="checkbox" checked> Add to the queue when ready</label>
+      <button type="submit" class="primary">Generate song + cover</button>
+    </form>
+    <h4>Generation status</h4>
+    <ul id="jobs" class="jobs"><li class="muted">No songs generating.</li></ul>
+
+    <h3>DJ voice</h3>
+    <p class="muted">The DJ uses Chatterbox's default voice. Upload a 5–20 s MP3 or WAV of a voice you have permission to use to customize it.</p>
+    <div class="voice">
+      <span id="voice-name" class="pill">Default voice</span>
+      <label class="file-btn">Upload voice<input id="voice-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"></label>
+      <button id="voice-reset" class="link hidden">Use default</button>
+    </div>
+    <p id="voice-msg" class="msg"></p>
+  </section>
+
+  <section class="panel" aria-label="Library">
+    <h3>Library <span id="lib-count" class="muted"></span></h3>
+    <div id="library" class="library"></div>
+  </section>
+
+  <section class="panel" aria-label="Queue">
+    <h3>Up next</h3>
+    <ol id="queue" class="queue"></ol>
+    <button id="queue-all" class="link">Queue whole library</button>
+    <button id="queue-clear" class="link">Clear queue</button>
+  </section>
+</main>
+
+<dialog id="lyrics-dialog">
+  <h3 id="lyrics-title"></h3>
+  <pre id="lyrics-body"></pre>
+  <form method="dialog"><button>Close</button></form>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<audio id="audio" preload="auto"></audio>
+<script src="/static/app.js"></script>
+</body>
+</html>
