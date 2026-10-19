@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">AI Jukebox default cover</title>
+  <desc id="desc">A simple coral and magenta gradient with a white waveform.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff5b62"/>
+      <stop offset="0.48" stop-color="#f52f59"/>
+      <stop offset="1" stop-color="#b51d76"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="28%" cy="18%" r="78%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="56" fill="url(#bg)"/>
+  <rect width="1024" height="1024" rx="56" fill="url(#glow)"/>
+  <g fill="#fff" opacity=".96">
+    <rect x="242" y="439" width="30" height="146" rx="15"/>
+    <rect x="298" y="390" width="30" height="244" rx="15"/>
+    <rect x="354" y="328" width="30" height="368" rx="15"/>
+    <rect x="410" y="418" width="30" height="188" rx="15"/>
+    <rect x="466" y="276" width="30" height="472" rx="15"/>
+    <rect x="522" y="358" width="30" height="308" rx="15"/>
+    <rect x="578" y="402" width="30" height="220" rx="15"/>
+    <rect x="634" y="342" width="30" height="340" rx="15"/>
+    <rect x="690" y="417" width="30" height="190" rx="15"/>
+    <rect x="746" y="454" width="30" height="116" rx="15"/>
+  </g>
+</svg>

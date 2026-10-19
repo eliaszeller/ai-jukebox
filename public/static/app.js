@@ -3,7 +3,7 @@
 
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
-const PLACEHOLDER = "/static/placeholder.svg";
+const PLACEHOLDER = "/static/default-cover.svg";
 
 let tracks = [];                 // library
 let libraryFilter = "";
