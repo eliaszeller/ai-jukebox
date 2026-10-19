@@ -6,6 +6,7 @@
   <title>AI Jukebox</title>
   <link rel="stylesheet" href="/static/style.css">
   <link rel="stylesheet" href="/static/combo.css">
+  <link rel="stylesheet" href="/static/navigation.css">
 </head>
 <body>
   <div class="app-shell">
@@ -15,21 +16,21 @@
         <span>⌕</span><input id="library-search" type="search" placeholder="Search">
       </label>
       <nav>
-        <a class="active" href="#library-section"><span>⌂</span> Home</a>
-        <a href="#create-section"><span>✦</span> Create</a>
-        <a href="#library-section"><span>▦</span> Library</a>
-        <a href="#queue-panel"><span>≋</span> Up Next</a>
+        <a class="active" href="#home-section" data-nav-target="home-section" data-nav-primary><span>⌂</span> Home</a>
+        <a href="#create-section" data-nav-target="create-section" data-nav-primary><span>✦</span> Create</a>
+        <a href="#library-section" data-nav-target="library-section" data-nav-primary><span>▦</span> Library</a>
+        <a href="#queue-panel" data-nav-target="queue-panel" data-nav-primary><span>≋</span> Up Next</a>
       </nav>
       <p class="nav-label">Library</p>
       <nav>
-        <a href="#library-section"><span>◷</span> Recently Added</a>
-        <a href="#library-section"><span>♫</span> Songs</a>
-        <a href="#create-section"><span>▣</span> Cover Studio</a>
+        <a href="#library-section" data-nav-target="library-section"><span>◷</span> Recently Added</a>
+        <a href="#library-section" data-nav-target="library-section"><span>♫</span> Songs</a>
+        <a href="#create-section" data-nav-target="create-section"><span>▣</span> Cover Studio</a>
       </nav>
       <p class="nav-label">AI studio</p>
       <nav>
-        <a href="#create-section"><span>⚡</span> Song Generator</a>
-        <a href="#voice-studio"><span>◉</span> DJ Voice</a>
+        <a href="#create-section" data-nav-target="create-section"><span>⚡</span> Song Generator</a>
+        <a href="#voice-studio" data-nav-target="voice-studio"><span>◉</span> DJ Voice</a>
       </nav>
       <div class="profile"><span class="avatar">EZ</span><span>AI Jukebox</span></div>
     </aside>
@@ -43,7 +44,7 @@
 
       <main class="content">
         <div id="config-banner" class="banner hidden"></div>
-        <section class="hero" aria-label="Now playing">
+        <section id="home-section" class="hero" aria-label="Now playing">
           <div class="hero-art-wrap"><img id="np-cover" class="hero-art" src="/static/placeholder.svg" alt="Current album cover"></div>
           <div class="hero-copy">
             <p id="np-phase" class="eyebrow">AI RADIO</p>

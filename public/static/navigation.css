@@ -1,0 +1,12 @@
+#home-section, #library-section, #create-section, #voice-studio { scroll-margin-top: 78px; }
+.nav-arrival { animation: nav-arrival 900ms ease-out; }
+#queue-panel.nav-arrival { animation: queue-arrival 900ms ease-out; }
+@keyframes nav-arrival { 0% { box-shadow: 0 0 0 0 rgba(250,45,72,.28); } 40% { box-shadow: 0 0 0 7px rgba(250,45,72,.12); } 100% { box-shadow: 0 0 0 0 rgba(250,45,72,0); } }
+@keyframes queue-arrival { 0%,100% { background:#fafafa; } 35% { background:#fff0f3; } }
+@media (max-width:1120px) {
+  #queue-panel { display:block; position:relative; inset:auto; width:auto; margin:0 28px 120px 218px; padding:24px; border:1px solid var(--line); border-radius:18px; }
+}
+@media (max-width:760px) {
+  #home-section, #library-section, #create-section, #voice-studio, #queue-panel { scroll-margin-top: 76px; }
+  #queue-panel { margin:0 16px 110px; }
+}

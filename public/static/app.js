@@ -326,6 +326,41 @@ $("library-search").addEventListener("input", (e) => {
   renderLibrary();
 });
 
+// Sidebar navigation uses an explicit offset so headings are never hidden by the sticky toolbar.
+const navLinks = [...document.querySelectorAll(".sidebar a[data-nav-target]")];
+function markNav(link) {
+  navLinks.forEach((item) => item.classList.toggle("active", item === link));
+}
+function showNavTarget(targetId, link, updateHash = true) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  markNav(link);
+  const isFixedQueue = targetId === "queue-panel" && window.innerWidth > 1120;
+  if (!isFixedQueue) {
+    const stickyOffset = window.innerWidth <= 760 ? 68 : 72;
+    const top = target.getBoundingClientRect().top + window.scrollY - stickyOffset;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  }
+  target.classList.remove("nav-arrival");
+  requestAnimationFrame(() => target.classList.add("nav-arrival"));
+  setTimeout(() => target.classList.remove("nav-arrival"), 950);
+  if (updateHash) history.replaceState(null, "", `#${targetId}`);
+}
+navLinks.forEach((link) => link.addEventListener("click", (event) => {
+  event.preventDefault();
+  showNavTarget(link.dataset.navTarget, link);
+}));
+
+const observedSections = ["home-section", "library-section", "create-section", "voice-studio"];
+const navObserver = new IntersectionObserver((entries) => {
+  const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+  if (!visible) return;
+  const primary = navLinks.find((link) => link.dataset.navTarget === visible.target.id && link.hasAttribute("data-nav-primary"))
+    || navLinks.find((link) => link.dataset.navTarget === visible.target.id);
+  if (primary) markNav(primary);
+}, { rootMargin: "-80px 0px -55% 0px", threshold: [0.05, 0.25, 0.55] });
+observedSections.forEach((id) => { const section = document.getElementById(id); if (section) navObserver.observe(section); });
+
 // ---------------------------------------------------------------- generation jobs
 const jobs = {
   list: [], timer: null,
@@ -441,6 +476,11 @@ $("voice-reset").addEventListener("click", async () => {
 // ---------------------------------------------------------------- boot
 setupCombobox("style");
 setupCombobox("mood");
+const initialTarget = location.hash.slice(1);
+if (initialTarget) {
+  const initialLink = navLinks.find((link) => link.dataset.navTarget === initialTarget) || navLinks[0];
+  requestAnimationFrame(() => showNavTarget(initialTarget, initialLink, false));
+}
 
 (async function boot() {
   try {
