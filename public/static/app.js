@@ -9,6 +9,9 @@ let tracks = [];                 // library
 let libraryFilter = "";
 const byId = () => Object.fromEntries(tracks.map((t) => [t.id, t]));
 let voiceId = "default";
+const PLAY_COUNTS_KEY = "ai-jukebox-play-counts";
+let playCounts = {};
+try { playCounts = JSON.parse(localStorage.getItem(PLAY_COUNTS_KEY) || "{}"); } catch (_) {}
 
 const comboGroups = {
   style: {
@@ -166,7 +169,35 @@ function renderLibrary() {
         </div>
       </div>
     </article>`).join("");
+  renderHomeCards();
 }
+
+function renderHomeCards() {
+  const top = $("home-top-tracks");
+  const queue = $("home-queue");
+  if (!top || !queue) return;
+  const ranked = tracks.map((track, order) => ({ track, order, plays: Number(playCounts[track.id] || 0) }))
+    .sort((a, b) => b.plays - a.plays || a.order - b.order).slice(0, 3);
+  top.innerHTML = ranked.length ? ranked.map(({ track, plays }, index) => `
+    <button class="home-track" data-home-play="${esc(track.id)}">
+      <img src="${esc(track.cover_url || PLACEHOLDER)}" alt="" loading="lazy">
+      <span class="home-track-copy"><strong>${index + 1}. ${esc(track.title)}</strong><span>${esc(track.style)}</span></span>
+      <span class="home-track-stat">${plays ? `${plays} play${plays === 1 ? "" : "s"}` : "New"}</span>
+    </button>`).join("") : '<p class="muted">Your top tracks will appear here.</p>';
+  const start = Math.max(0, player.index);
+  const upcoming = player.queue.slice(start, start + 3).map((id) => byId()[id]).filter(Boolean);
+  queue.innerHTML = upcoming.length ? upcoming.map((track, index) => `
+    <div class="home-track">
+      <img src="${esc(track.cover_url || PLACEHOLDER)}" alt="" loading="lazy">
+      <span class="home-track-copy"><strong>${esc(track.title)}</strong><span>${esc(track.mood)}</span></span>
+      <span class="home-track-stat">${index === 0 && player.index >= 0 ? "Now" : `#${start + index + 1}`}</span>
+    </div>`).join("") : '<p class="muted">Nothing queued yet. Press play to start your library.</p>';
+}
+
+$("home-top-tracks").addEventListener("click", (event) => {
+  const track = event.target.closest("[data-home-play]");
+  if (track) player.playNow(track.dataset.homePlay);
+});
 
 $("library").addEventListener("click", async (e) => {
   const btn = e.target.closest("button[data-act]");
@@ -237,6 +268,9 @@ const player = {
     this.token = token;
     const t = byId()[this.queue[this.index]];
     this.setPhase("song", t);
+    playCounts[t.id] = Number(playCounts[t.id] || 0) + 1;
+    localStorage.setItem(PLAY_COUNTS_KEY, JSON.stringify(playCounts));
+    renderHomeCards();
     this.load(t.audio_url);
     if (this.index + 1 < this.queue.length) this.fetchDJ(this.index + 1);   // prefetch next intro
   },
@@ -396,12 +430,13 @@ $("btn-skip").disabled = true;
 function renderQueue() {
   const map = byId();
   const q = $("queue");
-  if (!player.queue.length) { q.innerHTML = '<li class="muted">Empty. Press play to queue the whole library.</li>'; return; }
+  if (!player.queue.length) { q.innerHTML = '<li class="muted">Empty. Press play to queue the whole library.</li>'; renderHomeCards(); return; }
   q.innerHTML = player.queue.map((id, i) => {
     const cls = i === player.index ? "current" : i < player.index ? "done" : "";
     const t = map[id];
     return `<li class="${cls}"><span>${esc(t ? t.title : "(missing)")}</span>${i >= player.index ? `<button data-pos="${i}" aria-label="Remove">✕</button>` : ""}</li>`;
   }).join("");
+  renderHomeCards();
 }
 $("queue").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-pos]");
@@ -457,7 +492,9 @@ navLinks.forEach((link) => link.addEventListener("click", (event) => {
   event.preventDefault();
   showPage(link.dataset.pageTarget, link, link.dataset.focusTarget);
 }));
-$("open-create").addEventListener("click", () => showPage("create"));
+$("home-library").addEventListener("click", () => showPage("library"));
+$("home-create").addEventListener("click", () => showPage("create"));
+$("home-queue-open").addEventListener("click", () => showPage("queue"));
 window.addEventListener("hashchange", () => {
   const [page, detail] = location.hash.slice(1).split("/");
   showPage(page || "home", undefined, detail === "voice" ? "voice-studio" : undefined, false);
