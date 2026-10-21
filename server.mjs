@@ -78,7 +78,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method!=='GET'&&req.method!=='HEAD')return json(404,{error:'Not found.'});
   let file;
   if(/^\/media\/[\da-f-]+(?:-dj)?\.(mp3|png)$/.test(u.pathname))file=path.join(data,path.basename(u.pathname));
-  else if(['/','/app.js','/style.css'].includes(u.pathname))file=path.join(root,'public',u.pathname==='/'?'index.html':u.pathname.slice(1));
+  else if(['/','/app.js','/moods.js','/style.css'].includes(u.pathname))file=path.join(root,'public',u.pathname==='/'?'index.html':u.pathname.slice(1));
   else return json(404,{error:'Not found.'});
   const bytes=await readFile(file),type=mime[path.extname(file)];
   const range=req.headers.range?.match(/^bytes=(\d+)-(\d*)$/);

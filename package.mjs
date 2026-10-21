@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {configuration} from './services.mjs';
 const root=path.dirname(fileURLToPath(import.meta.url));
-const files=['package.json','server.mjs','services.mjs','radio.mjs','package.mjs','README.md','.env.example','.gitignore','.dockerignore','Dockerfile','public/index.html','public/style.css','public/app.js','test/services.test.mjs','test/radio.test.mjs'];
+const files=['package.json','server.mjs','services.mjs','radio.mjs','package.mjs','README.md','.env.example','.gitignore','.dockerignore','Dockerfile','public/index.html','public/style.css','public/app.js','public/moods.js','test/moods.test.mjs','test/services.test.mjs','test/radio.test.mjs'];
 const key=configuration().key;
 const table=Array.from({length:256},(_,n)=>{for(let k=0;k<8;k++)n=n&1?0xedb88320^(n>>>1):n>>>1;return n>>>0;});
 function crc32(buf){let c=0xffffffff;for(const b of buf)c=table[(c^b)&255]^(c>>>8);return (c^0xffffffff)>>>0;}

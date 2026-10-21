@@ -2,6 +2,14 @@
 
 A self-contained Node.js app that creates original songs, matching cover art, and a collection player with spoken AI DJ transitions. No paid APIs, external web assets, package dependencies, or bundled music are used.
 
+## Mood playlists
+
+Open **Mood playlists** for a recommendation based on the browser's local time and weekday. Morning (5–11 AM) is Slow Wake-Up; afternoon (11 AM–5 PM) is Find Your Flow; evening (5–10 PM) is Evening Unwind; overnight (10 PM–5 AM) is Late-Night Grind for studying. The day themes run from Sunday Reset through Monday Momentum, Tuesday Tunnel Vision, Wednesday Balance, Thursday Push, Friday Freedom, and Saturday Drift. Morning and study prompts prioritize quiet or steady instrumental music over the weekday theme.
+
+Use the time/day selectors to plan ahead, or **Use right now** to return to the local clock. Recommendations refresh every minute, including when a new day begins. Playback never starts or changes itself when the clock changes. **Play this mood** starts the DJ or changes the next pick in your active session; it uses the DJ's selected music source, song length and generation limit. New originals require an enabled generation source and available class services.
+
+As the DJ plays songs for that mood, their IDs are added to a playlist under **Your mood playlists**. **Replay** plays its saved available songs; **Continue** resumes curation for that mood; **Remove** removes the playlist membership without deleting any audio. Titles, song IDs and time/day preferences are stored only in this browser's local storage (up to 28 time/day combinations and 100 unique songs each). They persist across reloads on the same app address but do not sync across devices or ports; clearing browser storage removes them. If storage is blocked, playlists are kept for the current page session only. Deleted or unavailable songs are excluded from replay. Mood metadata and runtime audio are not included in GitHub or submission archives.
+
 ## Let the DJ take over
 
 Open **Your DJ** in the sidebar. Tell it what you want to hear, choose a source, then select **Start DJ**. The DJ uses Qwen to choose music and Chatterbox to introduce it; new originals use ACE-Step and FLUX for music and matching cover art.
@@ -92,3 +100,5 @@ Troubleshooting: HTTP 401 indicates an incorrect class key; connection errors su
 The refreshed interface uses a Spotify-inspired desktop layout with dark panels, sidebar navigation, green controls, genre cards, library search, and a custom bottom player. It retains Midnight Radio branding and has no Spotify account, assets, or API dependency. Browser checks confirmed the Rap preset, search filtering, sidebar playback, and seeking.
 
 Autonomous DJ verification: all 15 automated checks passed. Live class-service checks created a new jazz original from an empty library, changed the next generated song to synth through a request, selected an existing track in library-only mode, generated spoken introductions, and confirmed session stopping. Browser verification confirmed session controls and automatic playback.
+
+Mood-playlist verification: all 20 automated checks passed, including time boundaries, overnight behavior, all weekday themes, manual overrides, persistence serialization, duplicate handling, and invalid stored data.
