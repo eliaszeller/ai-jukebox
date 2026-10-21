@@ -15,6 +15,7 @@ AI Jukebox is a full-stack music application for MBAX 6418 Assignment 3. It crea
 3. **Integrated AI DJ:** Qwen writes song-specific transitions and Chatterbox speaks them before each queued song. The player uses one audio element, so DJ speech and music cannot overlap.
 4. **DJ voice cloning:** the default Chatterbox voice works without an upload. A user may upload an MP3 or WAV reference that they have permission to use, then reset to the default voice.
 5. **Session library:** completed songs are stored in D1/R2, appear in the library, and may be played or queued immediately.
+6. **Music-focused home dashboard:** the restored AI Radio header sits above three cards for the most-listened tracks, the creation studio, and the current queue. Listen counts are kept in the visitor's browser and update when a song begins.
 
 ![Library and playback controls](docs/screenshots/jukebox-library-player.jpg)
 
@@ -34,7 +35,7 @@ The application uses only the class-provided services and does not use paid serv
 - Node.js 22.13 or newer
 - npm (included with Node.js)
 - Git for repository workflows
-- Access to the four class endpoints above
+- Access to the four required class services
 - One class API key
 - For local development, Cloudflare Wrangler/Miniflare is installed through `npm ci`
 
@@ -76,11 +77,22 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 
 Run the migration only once for a fresh local state directory.
 
+## App navigation
+
+The interface uses separate views instead of one long scrolling page:
+
+- **Home:** shows the AI Radio artwork and playback header, the three most-listened tracks, a shortcut to the studio, and a preview of Up Next.
+- **Library:** contains every available track with play, queue, lyrics, and artwork actions.
+- **Create:** contains the searchable style and mood controls, song generator, cover workflow, generation status, and DJ voice settings.
+- **Up Next:** opens the queue panel used by the AI DJ sequence.
+
+The sidebar intentionally contains only these primary destinations. Selecting a track in the Home ranking plays it immediately. The persistent bottom player remains available in every view and reports whether the DJ or a song is currently playing.
+
 ## How to exercise the required features
 
 ### 1. Generate a custom song
 
-1. Open **Create** or **Song Generator**.
+1. Open **Create** from the sidebar or the Home studio card.
 2. Search for or type a style and mood.
 3. Select a duration and choose **Vocal** or **Instrumental**.
 4. Optionally enter a title and theme.
@@ -105,7 +117,7 @@ The cover below was generated during the documented end-to-end test for “Evide
 
 ### 4. Customize the DJ voice
 
-Open **DJ Voice**, upload a permitted MP3 or WAV between 2 KB and 10 MB, and play the next queued track. Use reset to remove the stored reference and return to the default voice. Voice-reference files are runtime data and are never part of the repository or ZIP.
+Open **Create**, scroll to **DJ voice**, upload a permitted MP3 or WAV between 2 KB and 10 MB, and play the next queued track. Use reset to remove the stored reference and return to the default voice. Voice-reference files are runtime data and are never part of the repository or ZIP.
 
 ## Included sample songs
 
@@ -141,7 +153,7 @@ Latest verified checks:
 
 The most important design choice was using one HTML audio element for both DJ clips and songs. The queue is an explicit state machine: `dj-loading → dj → song → next track`. Testing showed that the DJ MP3 finishes before the track is loaded, eliminating overlap and keeping pause, skip, seeking, and progress behavior consistent. Prefetching the next DJ script reduces silence without playing two sources simultaneously.
 
-The interface intentionally resembles a familiar music library rather than an “AI dashboard.” Searchable style and mood controls still allow free typing, while the persistent bottom player exposes the currently active phase.
+The interface intentionally resembles a familiar music library rather than an “AI dashboard.” Home preserves the recognizable radio artwork and headline while providing three practical cards in a left-to-right hierarchy: Library, Create, and Up Next. Separate Home, Library, and Create views keep each task focused. Searchable style and mood controls still allow free typing, while the persistent bottom player exposes the currently active phase.
 
 ## Investigated limitation
 
