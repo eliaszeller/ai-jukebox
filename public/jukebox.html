@@ -34,7 +34,16 @@
       <main class="content">
         <div id="config-banner" class="banner hidden"></div>
         <section id="home-section" class="home-page page-view" data-page="home" aria-label="Home">
-          <div class="home-heading"><p class="eyebrow">AI JUKEBOX</p><h1>Listen, create, repeat.</h1><p>Your music studio and personal radio, all in one place.</p></div>
+          <div class="home-masthead" aria-label="Now playing">
+            <div class="home-logo-wrap"><img id="np-cover" src="/static/default-cover.svg" alt="AI Jukebox artwork"></div>
+            <div class="home-heading">
+              <p id="np-phase" class="eyebrow">AI RADIO</p>
+              <h1 id="np-title">Your personal AI radio station</h1>
+              <p id="np-sub" class="artist-line">Original songs, cover art and live DJ commentary</p>
+              <p id="np-dj" class="dj-caption">Choose a track or press play to start the show.</p>
+              <button id="hero-play" class="play-pill">▶ Play</button>
+            </div>
+          </div>
           <div class="home-grid">
             <article class="home-card library-home-card">
               <div class="home-card-head"><span class="home-card-icon library-icon">♫</span><div><p class="eyebrow">LIBRARY</p><h2>Most listened</h2></div></div>
@@ -51,13 +60,6 @@
               <div id="home-queue" class="home-track-list"><p class="muted">Nothing queued yet.</p></div>
               <button id="home-queue-open" class="home-card-action">View Queue <span>›</span></button>
             </article>
-          </div>
-          <div class="player-state" aria-live="polite">
-            <img id="np-cover" src="/static/default-cover.svg" alt="">
-            <span id="np-phase">AI RADIO</span><span id="np-title">Your personal AI radio station</span>
-            <span id="np-sub">Original songs, cover art and live DJ commentary</span>
-            <span id="np-dj">Choose a track or press play to start the show.</span>
-            <button id="hero-play" tabindex="-1">▶ Play</button>
           </div>
         </section>
 
