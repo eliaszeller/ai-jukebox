@@ -1,3 +1,4 @@
+.page-view[hidden] { display:none!important; }
 #home-section, #library-section, #create-section, #voice-studio { scroll-margin-top: 78px; }
 .nav-arrival { animation: nav-arrival 900ms ease-out; }
 #queue-panel.nav-arrival { animation: queue-arrival 900ms ease-out; }

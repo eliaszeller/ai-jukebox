@@ -18,21 +18,21 @@
         <span>⌕</span><input id="library-search" type="search" placeholder="Search">
       </label>
       <nav>
-        <a class="active" href="#home-section" data-nav-target="home-section" data-nav-primary><span>⌂</span> Home</a>
-        <a href="#create-section" data-nav-target="create-section" data-nav-primary><span>✦</span> Create</a>
-        <a href="#library-section" data-nav-target="library-section" data-nav-primary><span>▦</span> Library</a>
-        <a href="#queue-panel" data-nav-target="queue-panel" data-nav-primary><span>≋</span> Up Next</a>
+        <a class="active" href="#home" data-page-target="home" data-nav-primary><span>⌂</span> Home</a>
+        <a href="#library" data-page-target="library" data-nav-primary><span>▦</span> Library</a>
+        <a href="#create" data-page-target="create" data-nav-primary><span>✦</span> Create</a>
+        <a href="#queue" data-page-target="queue" data-nav-primary><span>≋</span> Up Next</a>
       </nav>
       <p class="nav-label">Library</p>
       <nav>
-        <a href="#library-section" data-nav-target="library-section"><span>◷</span> Recently Added</a>
-        <a href="#library-section" data-nav-target="library-section"><span>♫</span> Songs</a>
-        <a href="#create-section" data-nav-target="create-section"><span>▣</span> Cover Studio</a>
+        <a href="#library" data-page-target="library"><span>◷</span> Recently Added</a>
+        <a href="#library" data-page-target="library"><span>♫</span> Songs</a>
       </nav>
       <p class="nav-label">AI studio</p>
       <nav>
-        <a href="#create-section" data-nav-target="create-section"><span>⚡</span> Song Generator</a>
-        <a href="#voice-studio" data-nav-target="voice-studio"><span>◉</span> DJ Voice</a>
+        <a href="#create" data-page-target="create"><span>⚡</span> Song Generator</a>
+        <a href="#create" data-page-target="create"><span>▣</span> Cover Studio</a>
+        <a href="#create/voice" data-page-target="create" data-focus-target="voice-studio"><span>◉</span> DJ Voice</a>
       </nav>
       <div class="profile"><span class="avatar">EZ</span><span>AI Jukebox</span></div>
     </aside>
@@ -44,22 +44,23 @@
 
       <main class="content">
         <div id="config-banner" class="banner hidden"></div>
-        <section id="home-section" class="hero" aria-label="Now playing">
+        <section id="home-section" class="hero page-view" data-page="home" aria-label="Now playing">
           <div class="hero-art-wrap"><img id="np-cover" class="hero-art" src="/static/default-cover.svg" alt="AI Jukebox waveform cover"></div>
           <div class="hero-copy">
             <p id="np-phase" class="eyebrow">AI RADIO</p>
             <h1 id="np-title">Your personal AI radio station</h1>
             <p id="np-sub" class="artist-line">Original songs, cover art and live DJ commentary</p>
             <p id="np-dj" class="dj-caption">Choose a track or press play to start the show.</p>
-            <div class="hero-actions"><button id="hero-play" class="play-pill">▶ Play</button><button class="soft-pill" onclick="document.getElementById('create-section').scrollIntoView({behavior:'smooth'})">＋ Create song</button></div>
+            <div class="hero-actions"><button id="hero-play" class="play-pill">▶ Play</button><button id="open-create" class="soft-pill">＋ Create song</button></div>
           </div>
         </section>
 
-        <section id="library-section" class="section-block">
+        <section id="library-section" class="section-block page-view" data-page="library" hidden>
           <div class="section-heading"><div><p class="eyebrow">YOUR COLLECTION</p><h2>Library <span id="lib-count" class="count"></span></h2></div><button id="queue-all" class="text-btn">Play all</button></div>
           <div id="library" class="library"></div>
         </section>
 
+        <div class="page-view create-page" data-page="create" hidden>
         <section id="create-section" class="studio-card">
           <div class="studio-intro"><span class="studio-icon">✦</span><p class="eyebrow">AI STUDIO</p><h2>Create a song</h2><p>Choose a sound and mood. The studio writes, composes, and paints a cover for your original track.</p></div>
           <form id="song-form" class="song-form">
@@ -92,6 +93,7 @@
           <div><p class="eyebrow">ON-AIR PERSONALITY</p><h2>DJ voice</h2><p>Use the default host or upload a short voice sample you have permission to use.</p></div>
           <div class="voice"><span id="voice-name" class="pill">Default voice</span><label class="file-btn">Upload voice<input id="voice-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"></label><button id="voice-reset" class="text-btn hidden">Use default</button><p id="voice-msg" class="msg"></p></div>
         </section>
+        </div>
       </main>
     </section>
 
