@@ -13,6 +13,24 @@ const samples: Track[] = [
 function userId(request: Request) { return request.headers.get("oai-authenticated-user-id") || "owner"; }
 function safeUser(id: string) { return id.replace(/[^a-zA-Z0-9_-]/g, "_"); }
 function uid() { return crypto.randomUUID().replaceAll("-", "").slice(0, 12); }
+function mp3Duration(bytes: Uint8Array) {
+  let offset = 0;
+  if (bytes.length > 10 && bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {
+    offset = 10 + ((bytes[6] & 0x7f) << 21) + ((bytes[7] & 0x7f) << 14) + ((bytes[8] & 0x7f) << 7) + (bytes[9] & 0x7f);
+  }
+  const mpeg1Layer3 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
+  const mpeg2Layer3 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
+  for (let i = offset; i + 3 < bytes.length; i++) {
+    if (bytes[i] !== 0xff || (bytes[i + 1] & 0xe0) !== 0xe0) continue;
+    const version = (bytes[i + 1] >> 3) & 0x03;
+    const layer = (bytes[i + 1] >> 1) & 0x03;
+    const bitrateIndex = (bytes[i + 2] >> 4) & 0x0f;
+    if (version === 1 || layer !== 1 || bitrateIndex === 0 || bitrateIndex === 15) continue;
+    const bitrate = (version === 3 ? mpeg1Layer3 : mpeg2Layer3)[bitrateIndex];
+    if (bitrate) return Math.max(1, Math.round(((bytes.length - i) * 8) / (bitrate * 1000) * 10) / 10);
+  }
+  return null;
+}
 function errorResponse(error: unknown, status = 500) {
   const message = error instanceof Error ? error.message : "Something unexpected went wrong.";
   return Response.json({ detail: message }, { status });
@@ -57,7 +75,7 @@ export async function GET(request: Request, context: Context) {
       const { bucket } = bindings();
       const object = await bucket.get(`${safeUser(user)}/${route.slice(1).join("/")}`);
       if (!object) return new Response("Not found", { status: 404 });
-      const headers = new Headers(); object.writeHttpMetadata(headers); headers.set("Cache-Control", "private, max-age=86400");
+      const headers = new Headers(); object.writeHttpMetadata(headers); headers.set("Cache-Control", "private, max-age=86400"); headers.set("Content-Length", String(object.size));
       return new Response(object.body, { headers });
     }
     return Response.json({ detail: "Unknown endpoint" }, { status: 404 });
@@ -108,7 +126,7 @@ export async function POST(request: Request, context: Context) {
       if (voice) { const object = await bucket.get(`${safeUser(user)}/voice/reference`); if (object) reference = new Uint8Array(await object.arrayBuffer()); }
       const audio = await speak(text, reference); const id = uid();
       await bucket.put(`${safeUser(user)}/dj/${id}.mp3`, audio, { httpMetadata: { contentType: "audio/mpeg" } });
-      return Response.json({ text, audio_url: `/api/files/dj/${id}.mp3` });
+      return Response.json({ text, audio_url: `/api/files/dj/${id}.mp3`, duration: mp3Duration(audio) });
     }
     if (route[0] === "voice") {
       const form = await request.formData(); const file = form.get("file");

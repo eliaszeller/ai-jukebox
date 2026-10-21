@@ -226,7 +226,7 @@ $("library").addEventListener("click", async (e) => {
 //   DJ intro for track i  ->  track i  ->  DJ intro for track i+1  ->  track i+1 ...
 // `token` invalidates stale async work (e.g. a DJ clip that finishes loading after Skip).
 const player = {
-  queue: [], index: -1, phase: "idle", token: 0, paused: false, djCache: new Map(),
+  queue: [], index: -1, phase: "idle", token: 0, paused: false, expectedDuration: 0, djCache: new Map(),
 
   key(i) { return `${this.queue[i]}|${this.queue[i - 1] || ""}|${voiceId}`; },
 
@@ -256,7 +256,7 @@ const player = {
     if (dj && dj.audio_url) {
       $("np-dj").textContent = `DJ: “${dj.text}”`;
       this.setPhase("dj", t);
-      this.load(dj.audio_url);
+      this.load(dj.audio_url, dj.duration);
     } else {
       $("np-dj").textContent = dj && dj.text ? `DJ (text only): “${dj.text}”` : "";
       toast(`DJ commentary unavailable, playing the song. ${dj && dj.error ? dj.error : ""}`, true);
@@ -271,11 +271,12 @@ const player = {
     playCounts[t.id] = Number(playCounts[t.id] || 0) + 1;
     localStorage.setItem(PLAY_COUNTS_KEY, JSON.stringify(playCounts));
     renderHomeCards();
-    this.load(t.audio_url);
+    this.load(t.audio_url, t.duration);
     if (this.index + 1 < this.queue.length) this.fetchDJ(this.index + 1);   // prefetch next intro
   },
 
-  load(src) {
+  load(src, expectedDuration = 0) {
+    this.expectedDuration = Number(expectedDuration) > 0 ? Number(expectedDuration) : 0;
     updateProgress(0);
     audio.src = src;
     if (!this.paused) audio.play().catch((e) => {
@@ -286,7 +287,7 @@ const player = {
   next() {
     if (this.index + 1 < this.queue.length) return this.startAt(this.index + 1);
     ++this.token;
-    audio.pause(); audio.removeAttribute("src"); updateProgress(0);
+    audio.pause(); audio.removeAttribute("src"); this.expectedDuration = 0; updateProgress(0);
     this.index = this.queue.length;
     this.setPhase("ended");
     renderQueue(); renderLibrary();
@@ -387,19 +388,41 @@ function updateProgress(percent) {
   $("np-bar").style.width = `${safe}%`;
   $("player-progress").setAttribute("aria-valuenow", String(Math.round(safe)));
   const current = Number.isFinite(audio.currentTime) ? fmtDur(audio.currentTime) : "0:00";
-  const duration = Number.isFinite(audio.duration) ? fmtDur(audio.duration) : "0:00";
+  const durationValue = effectiveDuration();
+  const duration = durationValue > 0 ? fmtDur(durationValue) : "0:00";
   $("player-progress").setAttribute("aria-valuetext", `${current} of ${duration}`);
 }
+function effectiveDuration() {
+  if (Number.isFinite(audio.duration) && audio.duration > 0) return audio.duration;
+  if (audio.seekable && audio.seekable.length) {
+    const end = audio.seekable.end(audio.seekable.length - 1);
+    if (Number.isFinite(end) && end > 0) return end;
+  }
+  return player.expectedDuration || 0;
+}
 function syncProgress() {
-  updateProgress(audio.duration > 0 ? (audio.currentTime / audio.duration) * 100 : 0);
+  const duration = effectiveDuration();
+  updateProgress(duration > 0 ? (audio.currentTime / duration) * 100 : 0);
 }
 audio.addEventListener("timeupdate", syncProgress);
 audio.addEventListener("durationchange", syncProgress);
 audio.addEventListener("loadedmetadata", syncProgress);
+let progressFrame = 0;
+function animateProgress() {
+  cancelAnimationFrame(progressFrame);
+  if (!audio.paused && !audio.ended) {
+    syncProgress();
+    progressFrame = requestAnimationFrame(animateProgress);
+  }
+}
+audio.addEventListener("play", animateProgress);
+audio.addEventListener("pause", () => { cancelAnimationFrame(progressFrame); syncProgress(); });
+audio.addEventListener("ended", () => { cancelAnimationFrame(progressFrame); syncProgress(); });
 
 function seekToFraction(fraction) {
-  if (!Number.isFinite(audio.duration) || audio.duration <= 0 || !audio.getAttribute("src")) return;
-  audio.currentTime = Math.max(0, Math.min(1, fraction)) * audio.duration;
+  const duration = effectiveDuration();
+  if (duration <= 0 || !audio.getAttribute("src")) return;
+  audio.currentTime = Math.max(0, Math.min(1, fraction)) * duration;
   syncProgress();
 }
 $("player-progress").addEventListener("click", (event) => {
@@ -411,8 +434,9 @@ $("player-progress").addEventListener("keydown", (event) => {
   event.preventDefault();
   if (event.key === "Home") return seekToFraction(0);
   if (event.key === "End") return seekToFraction(1);
-  if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
-  audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5)));
+  const duration = effectiveDuration();
+  if (duration <= 0) return;
+  audio.currentTime = Math.max(0, Math.min(duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5)));
   syncProgress();
 });
 
