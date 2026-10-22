@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="/static/navigation.css">
   <link rel="stylesheet" href="/static/control-cleanup.css">
   <link rel="stylesheet" href="/static/progress.css">
+  <link rel="stylesheet" href="/static/interfaces.css">
+  <script src="/static/interface-preference.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -28,12 +30,14 @@
 
     <section class="workspace">
       <header class="topbar">
-        <div class="wordmark"><span class="mark">♫</span> AI Jukebox</div>
+        <div class="wordmark"><span class="mark">♫</span> <span id="ui-brand">AI Jukebox</span></div>
+        <label class="interface-picker">Interface <select id="interface-select" aria-label="Choose your interface"><option value="elias">Elias · AI Jukebox</option><option value="james">James · Midnight Radio</option><option value="oliver">Oliver · Afterhours</option></select></label>
       </header>
 
       <main class="content">
         <div id="config-banner" class="banner hidden"></div>
         <section id="home-section" class="home-page page-view" data-page="home" aria-label="Home">
+          <div class="alternate-welcome"><p class="eyebrow" id="ui-kicker"></p><h2 id="ui-welcome"></h2><p id="ui-description"></p><div class="design-record" aria-hidden="true"><span>♫</span></div></div>
           <div class="home-masthead" aria-label="Now playing">
             <div class="home-logo-wrap"><img id="np-cover" src="/static/default-cover.svg" alt="AI Jukebox artwork"></div>
             <div class="home-heading">
@@ -44,6 +48,7 @@
               <button id="hero-play" class="play-pill">▶ Play</button>
             </div>
           </div>
+          <section class="design-presets" aria-label="Creative starting points"><h2>Find your sound</h2><div class="design-preset-grid"><button type="button" data-design-style="Synth-Pop" data-design-mood="Dreamy">Synth<span>Neon nights</span></button><button type="button" data-design-style="Smooth Jazz" data-design-mood="Chill">Jazz<span>Slow evenings</span></button><button type="button" data-design-style="Melodic Rap" data-design-mood="Confident">Rap<span>Your own rhythm</span></button><button type="button" data-design-style="Indie Pop" data-design-mood="Hopeful">Pop<span>A fresh start</span></button></div></section>
           <div class="home-grid">
             <article class="home-card library-home-card">
               <div class="home-card-head"><span class="home-card-icon library-icon">♫</span><div><p class="eyebrow">LIBRARY</p><h2>Most listened</h2></div></div>
@@ -136,5 +141,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <audio id="audio" preload="auto"></audio>
   <script src="/static/app.js"></script>
+  <script src="/static/interfaces.js"></script>
 </body>
 </html>

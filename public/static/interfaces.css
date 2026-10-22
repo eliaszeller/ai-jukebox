@@ -1,0 +1,52 @@
+/* Branch palettes and design motifs adapted around the shared library/player. */
+.interface-picker{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+.interface-picker select{max-width:230px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--soft);color:var(--ink)}
+.alternate-welcome,.design-presets{display:none}
+html[data-interface=james]{--accent:#1ed760;--ink:#fff;--muted:#b3b3b3;--line:#303030;--soft:#282828;--sidebar:#121212;color-scheme:dark;font-family:Arial,Helvetica,sans-serif}
+html[data-interface=oliver]{--accent:#f4b394;--ink:#f1f0e9;--muted:#969f96;--line:#333833;--soft:#272b28;--sidebar:#121513;color-scheme:dark;font-family:Arial,Helvetica,sans-serif}
+html:not([data-interface=elias]),html:not([data-interface=elias]) body{background:#121212}
+html[data-interface=oliver],html[data-interface=oliver] body{background:#171918}
+html:not([data-interface=elias]) .sidebar,html:not([data-interface=elias]) .topbar,html:not([data-interface=elias]) .queue-panel{background:var(--sidebar);border-color:var(--line)}
+html:not([data-interface=elias]) .window-dots{visibility:hidden}
+html:not([data-interface=elias]) .sidebar nav a{color:var(--muted)}
+html:not([data-interface=elias]) .sidebar nav a.active{background:var(--soft);color:var(--accent)}
+html:not([data-interface=elias]) .search-box{background:var(--soft)}
+html:not([data-interface=elias]) .alternate-welcome{display:block;position:relative;overflow:hidden;padding:38px;margin-bottom:28px;min-height:260px;border-radius:12px;background:linear-gradient(125deg,#23543e,#143326 60%,#16251e)}
+html:not([data-interface=elias]) .alternate-welcome h2{position:relative;z-index:1;width:65%;font-size:clamp(32px,4vw,56px);line-height:1.05;letter-spacing:-2px;margin:20px 0}
+html:not([data-interface=elias]) .alternate-welcome>p{position:relative;z-index:1;max-width:65%;color:#c4e2d0;font-size:13px;line-height:1.6}
+.design-record{position:absolute;right:-20px;top:34px;width:210px;height:210px;border-radius:50%;background:repeating-radial-gradient(circle,#242424 0,#242424 1px,#101010 2px,#101010 5px);display:grid;place-items:center;transform:rotate(15deg);box-shadow:0 16px 35px #0007}
+.design-record span{display:grid;place-items:center;border-radius:50%;width:80px;height:80px;background:var(--accent);color:#121212;font-size:32px}
+html:not([data-interface=elias]) .home-masthead{grid-template-columns:100px 1fr;gap:22px;margin:22px 0}
+html:not([data-interface=elias]) .home-heading h1{font-size:28px}
+html:not([data-interface=elias]) .home-heading .artist-line{font-size:16px}
+html:not([data-interface=elias]) .home-heading .dj-caption{font-size:12px}
+html:not([data-interface=elias]) .design-presets{display:block;margin:28px 0}
+.design-presets h2{font-size:21px}
+.design-preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.design-preset-grid button{border:0;padding:24px 16px;min-height:110px;border-radius:8px;background:#7045aa;color:#fff;text-align:left;font-size:22px;font-weight:750;cursor:pointer}
+.design-preset-grid button:nth-child(2){background:#b76a27}.design-preset-grid button:nth-child(3){background:#28644c}.design-preset-grid button:nth-child(4){background:#a93687}
+.design-preset-grid span{display:block;font-size:11px;font-weight:400;margin-top:16px}
+html:not([data-interface=elias]) .home-card{background:#181818;border-radius:8px;box-shadow:none;min-height:320px}
+html:not([data-interface=elias]) .studio-card{background:#181818;border:1px solid var(--line);border-radius:10px}
+html:not([data-interface=elias]) .song-form{background:#202020;border-color:var(--line);box-shadow:none}
+html:not([data-interface=elias]) .song-form label,html:not([data-interface=elias]) .toggle legend,html:not([data-interface=elias]) .voice-controls label{color:var(--muted)}
+html:not([data-interface=elias]) .song-form input:not([type=range]):not([type=radio]):not([type=checkbox]),html:not([data-interface=elias]) .combo-menu{background:var(--soft);border-color:var(--line);color:var(--ink)}
+html:not([data-interface=elias]) .combo-option{color:var(--ink)}
+html:not([data-interface=elias]) .combo-option:hover,html:not([data-interface=elias]) .combo-option.active,html:not([data-interface=elias]) .combo-option.selected{background:#394239}
+html:not([data-interface=elias]) .jobs li{background:var(--soft)}
+html:not([data-interface=elias]) .player-bar{left:0;right:0;bottom:0;transform:none;width:100%;height:90px;padding:15px 32px;border:0;border-top:1px solid var(--line);border-radius:0;background:#181818;box-shadow:none}
+html:not([data-interface=elias]) .progress{left:92px;right:100px;background:#444}
+html:not([data-interface=elias]) .primary,html:not([data-interface=elias]) .file-btn,html:not([data-interface=elias]) .play-pill,html:not([data-interface=elias]) .player-main{color:#121212}
+html:not([data-interface=elias]) .card.playing{background:#24372b}
+html:not([data-interface=elias]) .studio-icon,html:not([data-interface=elias]) .home-studio-icon,html:not([data-interface=elias]) .home-card-icon{background:var(--accent);color:#182218;box-shadow:none}
+html:not([data-interface=elias]) dialog{background:var(--sidebar);color:var(--ink)}
+html[data-interface=oliver] .alternate-welcome{background:radial-gradient(ellipse at 95% 70%,#59634080,transparent 65%),#2b3928;border:1px solid #3b4937}
+html[data-interface=oliver] .alternate-welcome h2{font-family:Georgia,'Times New Roman',serif;font-weight:400}
+html[data-interface=oliver] .design-record{right:10px;background:repeating-radial-gradient(circle,#171c18 0px,#171c18 2px,#29302a 3px,#171c18 4px)}
+html[data-interface=oliver] .design-record span{background:#bccb9c}
+html[data-interface=oliver] .design-preset-grid button{font-family:Georgia,serif;font-weight:400;background:linear-gradient(150deg,#242d49,#817c91)}
+html[data-interface=oliver] .design-preset-grid button:nth-child(2){background:linear-gradient(170deg,#b4744b,#e5a46e)}
+html[data-interface=oliver] .design-preset-grid button:nth-child(3){background:#8a9d7b;color:#22382a}
+html[data-interface=oliver] .design-preset-grid button:nth-child(4){background:linear-gradient(140deg,#244a4c,#183d3e)}
+html[data-interface=oliver] .home-card,html[data-interface=oliver] .studio-card,html[data-interface=oliver] .song-form,html[data-interface=oliver] .player-bar{background:#202321}
+@media(max-width:760px){.topbar{display:flex;position:relative;height:auto;min-height:58px;padding:10px;gap:10px;flex-wrap:wrap}.interface-picker{margin-left:auto}.interface-picker select{max-width:190px}html:not([data-interface=elias]) .alternate-welcome{padding:24px}html:not([data-interface=elias]) .alternate-welcome h2{font-size:36px;width:75%}.design-record{opacity:.5;right:-70px}.design-preset-grid{grid-template-columns:repeat(2,1fr)}html:not([data-interface=elias]) .player-bar{padding:12px}html:not([data-interface=elias]) .progress{left:66px;right:22px}}

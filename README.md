@@ -1,5 +1,13 @@
 # AI Jukebox
 
+## Three interfaces, one library
+
+Use **Interface** in the header to choose Elias (AI Jukebox), James (Midnight Radio), or Oliver (Afterhours). Your choice is remembered in this browser. Changing designs keeps the current audio, queue, generated songs, and form values intact. All three use the same hosted library and generation services.
+
+The integrated designs adapt the light Elias interface, James's dark green Midnight Radio palette and genre cards, and Oliver's olive/peach Afterhours palette and serif hero. They share the hosted application controls; they are not independent deployments of the original branch apps. Branch-specific backend features (including Midnight Radio autonomous sessions and Afterhours IndexedDB storage) are not part of the interface selector. Existing local libraries from those standalone apps are not automatically imported.
+
+Integration records the original branch histories on `main`; the contributor branches remain unchanged. UI switching checks: `node --test tests/interfaces.test.mjs`.
+
 AI Jukebox is a full-stack music application for MBAX 6418 Assignment 3. It creates original songs, matching cover art, and spoken radio-DJ transitions using only the required class services.
 
 - Live app: https://ai-jukebox.eliaszeller2.chatgpt.site/jukebox
