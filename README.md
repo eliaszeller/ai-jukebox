@@ -12,7 +12,7 @@ AI Jukebox is a full-stack music application for MBAX 6418 Assignment 3. It crea
 
 - Live app: https://ai-jukebox.eliaszeller2.chatgpt.site/jukebox
 - Repository: https://github.com/eliaszeller/ai-jukebox
-- Primary submission branch: `EliasBranch`
+- Primary submission branch: [`main`](https://github.com/eliaszeller/ai-jukebox/tree/main)
 
 ![AI Jukebox home screen](docs/screenshots/jukebox-home.jpg)
 
@@ -52,6 +52,19 @@ The application uses only the class-provided services and does not use paid serv
 
 Endpoint addresses and credentials are intentionally omitted from this public repository. Obtain the current values from the private class documentation and place them in a local `.dev.vars` file using the runtime-variable names referenced by the server code.
 
+Create `.dev.vars` in the extracted project root. Replace every placeholder locally; never commit this file:
+
+```dotenv
+CLASS_API_KEY="<class credential>"
+QWEN_BASE_URL="<class text base URL including /v1>"
+QWEN_MODEL="<class text model ID>"
+FLUX_BASE_URL="<class image base URL including /v1>"
+FLUX_MODEL="<class image model ID>"
+ACESTEP_BASE_URL="<class music base URL>"
+CHATTERBOX_BASE_URL="<class speech base URL without /v1>"
+CHATTERBOX_MODEL="<class speech model ID>"
+```
+
 Never commit `.dev.vars`, `.env` files, API keys, endpoint addresses, generated user files, or voice recordings. These local files are ignored by Git. For a hosted deployment, enter the values as encrypted runtime variables in the hosting environment instead of placing them in source code.
 
 ## Install and launch
@@ -61,10 +74,11 @@ From an extracted GitHub ZIP or a fresh clone:
 ```bash
 npm ci
 npm run build
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_faulty_unicorn.sql
 npm start
 ```
 
-Open the loopback URL printed by Wrangler. The application route is `/jukebox`.
+Open the loopback URL printed by Wrangler and append `/jukebox`. The migration command initializes the fresh local database; do not rerun it against an existing database. Supply `.dev.vars` before starting the app. A live hosted demo is not a substitute for this ZIP installation.
 
 For development with hot reload:
 
@@ -144,7 +158,7 @@ They were generated in advance using the class endpoints only: Qwen created titl
 
 See [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md) for dated inputs, expected behavior, actual results, asset validation, and the failure test. See [docs/INDEPENDENT_INSTALL.md](docs/INDEPENDENT_INSTALL.md) for the clean GitHub ZIP procedure and results.
 
-Latest verified checks:
+Historical core-feature checks (2026-10-21; earlier deployment, not a fresh test of every feature on current `main`):
 
 - Hosted configuration: no missing variables
 - Bundled samples: 3/3 available
@@ -182,8 +196,8 @@ A second limitation is identity scope: authenticated visitors receive their own 
 ## Submission checklist
 
 - Submit repository: https://github.com/eliaszeller/ai-jukebox
-- Submit the final `EliasBranch` commit ID.
-- Download the ZIP from that exact commit/branch on GitHub.
+- Submit the final `main` commit ID (copy its full SHA from GitHub).
+- Download the ZIP from that exact commit on GitHub, rather than a moving branch ZIP. URL format: `https://github.com/eliaszeller/ai-jukebox/archive/<full-commit-sha>.zip`.
 - Confirm the ZIP contains this README, dependency lockfile, screenshots, tests, sample MP3s, and sample covers.
 - Keep teammate issues, pull requests, contributions, and reviews visible in GitHub.
 - Have a teammate repeat the clean-ZIP procedure and record their name/date in `docs/INDEPENDENT_INSTALL.md` before Canvas submission.
