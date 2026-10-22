@@ -5,3 +5,5 @@
 !radio.mjs
 !public/
 !public/**
+!samples/
+!samples/**

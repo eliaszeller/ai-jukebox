@@ -1,0 +1,39 @@
+{
+  "note": "Three ready-to-play sample songs. Run `npm run samples` with class credentials in .env to generate the audio, lyrics and covers with the class endpoints (Qwen 9001, ACE-Step 9007, FLUX 9006). The script fills in the generated fields below and writes <id>.mp3 and <id>.png next to this file. The server seeds any complete entry into the library on startup.",
+  "generatedAt": null,
+  "tracks": [
+    {
+      "id": "f956e2a9-e78f-4d27-8ab0-8bdafa093772",
+      "prompt": "A midnight drive through a rain-soaked city, warm analog synths, a steady groove and a hopeful melody.",
+      "genre": "Synth",
+      "mood": "Dreamy",
+      "artStyle": "Cinematic abstract photography, neon reflections on wet streets, no text",
+      "instrumental": true,
+      "duration": 60,
+      "bpm": 110,
+      "language": "en"
+    },
+    {
+      "id": "462704c4-8a68-4c60-9345-f497873af576",
+      "prompt": "An original feel-good pop song about a fresh start, with a memorable chorus, bright production and an irresistible beat.",
+      "genre": "Pop",
+      "mood": "Happy",
+      "artStyle": "Bold flat illustration, sunrise colors, confetti, no text",
+      "instrumental": false,
+      "duration": 60,
+      "bpm": 118,
+      "language": "en"
+    },
+    {
+      "id": "fcc88b57-4bc3-4271-a7fc-a043636e2780",
+      "prompt": "A relaxed jazz trio with expressive piano, upright bass and brushed drums, perfect for a late-night lounge.",
+      "genre": "Jazz",
+      "mood": "Chill",
+      "artStyle": "Moody film photograph of an empty jazz club, warm lamplight, no text",
+      "instrumental": true,
+      "duration": 60,
+      "bpm": 90,
+      "language": "en"
+    }
+  ]
+}
