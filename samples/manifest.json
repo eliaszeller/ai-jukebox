@@ -1,0 +1,35 @@
+[
+  {
+    "title": "Mountain Morning",
+    "style": "Acoustic folk",
+    "mood": "Hopeful",
+    "duration": 30,
+    "vocals": true,
+    "lyrics": "[Verse]\nThe fog lifts off the pine tree line,\nA golden trail beneath my feet.\nThe night folds up, the stars decline,\nAnd morning wakes where shadows retreat.\n\n[Chorus]\nOh, mountain morning, clear and kind,\nYou lift the burden from my mind.\nI’ll take the trail with steady pace,\nAnd meet the day in sunlight’s grace.",
+    "id": "58e1193c-8adc-4682-b911-78a914c40663",
+    "audio": "/samples/58e1193c-8adc-4682-b911-78a914c40663.mp3",
+    "cover": "/samples/58e1193c-8adc-4682-b911-78a914c40663.png"
+  },
+  {
+    "title": "After Hours",
+    "style": "Lo-fi",
+    "mood": "Relaxed",
+    "duration": 30,
+    "vocals": false,
+    "lyrics": "[Instrumental]",
+    "id": "5137290d-6e74-46e7-a938-7afe1ab28a90",
+    "audio": "/samples/5137290d-6e74-46e7-a938-7afe1ab28a90.mp3",
+    "cover": "/samples/5137290d-6e74-46e7-a938-7afe1ab28a90.png"
+  },
+  {
+    "title": "Neon Weekend",
+    "style": "Electronic",
+    "mood": "Energetic",
+    "duration": 30,
+    "vocals": false,
+    "lyrics": "[Instrumental]",
+    "id": "61dab440-a883-48aa-95cb-95f4d63520ac",
+    "audio": "/samples/61dab440-a883-48aa-95cb-95f4d63520ac.mp3",
+    "cover": "/samples/61dab440-a883-48aa-95cb-95f4d63520ac.png"
+  }
+]

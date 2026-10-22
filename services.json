@@ -1,0 +1,10 @@
+{
+  "qwen": {
+    "model": "cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit",
+    "body": {"model":"{{model}}","messages":[{"role":"user","content":"{{prompt}}"}],"temperature":0.8},
+    "resultPath": "choices.0.message.content"
+  },
+  "flux": {"body":{"model":"black-forest-labs/FLUX.2-klein-4B","prompt":"{{prompt}}","n":1,"size":"512x512","response_format":"b64_json"},"resultPath":"data.0.b64_json","encoding":"base64","mime":"image/png"},
+  "ace": {"body":{"prompt":"{{prompt}}","lyrics":"{{lyrics}}","audio_duration":"{{duration}}","batch_size":1,"inference_steps":8,"audio_format":"mp3","thinking":false,"use_cot_caption":false,"use_cot_language":false},"mime":"audio/mpeg"},
+  "chatterbox": {"body":{"model":"chatterbox-v3","input":"{{prompt}}","voice":"default","ref_audio":"{{reference}}","language_id":"en","response_format":"mp3"},"resultPath":"","mime":"audio/mpeg"}
+}

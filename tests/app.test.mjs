@@ -1,0 +1,14 @@
+import {test,after,before} from 'node:test';
+import assert from 'node:assert/strict';
+import {server,validateSong} from '../server.mjs';
+import {fill,validateURL} from '../services.mjs';
+let base;
+before(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}`;});
+after(()=>server.close());
+test('rejects invalid durations and empty fields',()=>{assert.throws(()=>validateSong({title:'x',style:'Jazz',mood:'Calm',duration:0}));assert.throws(()=>validateSong({title:'',style:'Jazz',mood:'Calm',duration:30}));});
+test('rejects reserved port and embedded credentials',()=>{assert.throws(()=>validateURL('http://example.com:9000/v1'));assert.throws(()=>validateURL('http://key:secret@example.com'));});
+test('template interpolation preserves numeric request fields',()=>assert.deepEqual(fill({duration:'{{duration}}',prompt:'Style: {{style}}'},{duration:30,style:'Jazz'}),{duration:30,prompt:'Style: Jazz'}));
+test('library contains three real sample pairs',async()=>{const r=await fetch(base+'/api/library'),songs=await r.json();assert.equal(songs.length,3);for(const song of songs){for(const path of [song.audio,song.cover]){const media=await fetch(base+path);assert.equal(media.status,200);assert.ok((await media.arrayBuffer()).byteLength>1000);}}});
+test('credentials and configuration files cannot be downloaded',async()=>{for(const path of ['/.env','/services.json','/start.mjs','/samples/manifest.json'])assert.equal((await fetch(base+path)).status,404);});
+test('invalid generation request returns recoverable validation error',async()=>{const r=await fetch(base+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'',duration:30})});assert.equal(r.status,400);assert.match((await r.json()).error,/title/);});
+test('blocks cross-origin submissions',async()=>{const r=await fetch(base+'/api/generate',{method:'POST',headers:{Origin:'https://example.org'},body:'{}'});assert.equal(r.status,403);});
