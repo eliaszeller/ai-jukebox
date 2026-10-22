@@ -105,7 +105,14 @@
 
         <section id="voice-studio" class="voice-card">
           <div><p class="eyebrow">ON-AIR PERSONALITY</p><h2>DJ voice</h2><p>Use the default host or upload a short voice sample you have permission to use.</p></div>
-          <div class="voice"><span id="voice-name" class="pill">Default voice</span><label class="file-btn">Upload voice<input id="voice-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"></label><button id="voice-reset" class="text-btn hidden">Use default</button><p id="voice-msg" class="msg"></p></div>
+          <div class="voice-panel">
+            <div class="voice"><span id="voice-name" class="pill">Default voice</span><label class="file-btn">Upload voice<input id="voice-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"></label><button id="voice-reset" class="text-btn hidden">Use default</button><p id="voice-msg" class="msg"></p></div>
+            <div class="voice-controls" aria-label="DJ voice settings">
+              <label>Expressiveness <output id="voice-expression-out">Balanced</output><input id="voice-expression" type="range" min="0" max="100" step="5" value="50"></label>
+              <label>Pace <output id="voice-pace-out">Normal</output><input id="voice-pace" type="range" min="0" max="100" step="5" value="50"></label>
+              <label>Variation <output id="voice-variation-out">Natural</output><input id="voice-variation" type="range" min="0" max="100" step="5" value="50"></label>
+            </div>
+          </div>
         </section>
         </div>
       </main>

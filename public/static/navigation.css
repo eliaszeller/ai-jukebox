@@ -53,3 +53,14 @@
   #home-section, #library-section, #create-section, #voice-studio, #queue-panel { scroll-margin-top: 76px; }
   #queue-panel { margin:0 16px 110px; }
 }
+
+/* DJ voice controls */
+.voice-card { display:grid; grid-template-columns:minmax(220px,.8fr) minmax(340px,1.2fr); align-items:start; gap:32px; }
+.voice-panel { display:grid; gap:18px; }
+.voice-controls { display:grid; gap:12px; padding:16px; border-radius:14px; background:var(--soft); }
+.voice-controls label { display:grid; grid-template-columns:1fr auto; gap:3px 14px; color:#55555b; font-size:12px; font-weight:700; }
+.voice-controls output { color:var(--accent); font-weight:650; }
+.voice-controls input[type=range] { grid-column:1/-1; width:100%; accent-color:var(--accent); }
+@media (max-width:760px) {
+  .voice-card { grid-template-columns:1fr; }
+}

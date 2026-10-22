@@ -69,7 +69,8 @@ export async function GET(request: Request, context: Context) {
     if (route[0] === "voice") {
       const { db } = bindings();
       const row = await db.prepare("SELECT value FROM settings WHERE user_id = ? AND key = 'voice'").bind(user).first<{ value: string }>();
-      return Response.json(row ? JSON.parse(row.value) : { id: null, name: null });
+      const controlRow = await db.prepare("SELECT value FROM settings WHERE user_id = ? AND key = 'voice_controls'").bind(user).first<{ value: string }>();
+      return Response.json({ ...(row ? JSON.parse(row.value) : { id: null, name: null }), controls: controlRow ? JSON.parse(controlRow.value) : { expression: 50, pace: 50, variation: 50 } });
     }
     if (route[0] === "files" && route[1]) {
       const { bucket } = bindings();
@@ -136,13 +137,23 @@ export async function POST(request: Request, context: Context) {
       if (!track) return errorResponse(new Error("Unknown track"), 404);
       const text = await writeDj(track, previous || undefined);
       const voice = await db.prepare("SELECT value FROM settings WHERE user_id = ? AND key = 'voice'").bind(user).first<{ value: string }>();
+      const controlRow = await db.prepare("SELECT value FROM settings WHERE user_id = ? AND key = 'voice_controls'").bind(user).first<{ value: string }>();
       let reference: Uint8Array | undefined;
       if (voice) { const object = await bucket.get(`${safeUser(user)}/voice/reference`); if (object) reference = new Uint8Array(await object.arrayBuffer()); }
-      const audio = await speak(text, reference); const id = uid();
+      const controls = controlRow ? JSON.parse(controlRow.value) : undefined;
+      const audio = await speak(text, reference, controls); const id = uid();
       await bucket.put(`${safeUser(user)}/dj/${id}.mp3`, audio, { httpMetadata: { contentType: "audio/mpeg" } });
       return Response.json({ text, audio_url: `/api/files/dj/${id}.mp3`, duration: mp3Duration(audio) });
     }
     if (route[0] === "voice") {
+      if ((request.headers.get("content-type") || "").includes("application/json")) {
+        const raw = await request.json() as { expression?: number; pace?: number; variation?: number };
+        const clamp = (value: unknown) => Math.max(0, Math.min(100, Math.round(Number(value) / 5) * 5));
+        const controls = { expression: clamp(raw.expression ?? 50), pace: clamp(raw.pace ?? 50), variation: clamp(raw.variation ?? 50) };
+        if (Object.values(controls).some(value => !Number.isFinite(value))) return errorResponse(new Error("Voice controls must be numbers from 0 to 100."), 400);
+        await db.prepare("INSERT OR REPLACE INTO settings (user_id, key, value) VALUES (?, 'voice_controls', ?)").bind(user, JSON.stringify(controls)).run();
+        return Response.json({ controls });
+      }
       const form = await request.formData(); const file = form.get("file");
       if (!(file instanceof File)) return errorResponse(new Error("Please choose an MP3 or WAV file."), 400);
       if (!/\.(mp3|wav)$/i.test(file.name) || file.size < 2000 || file.size > 10_000_000) return errorResponse(new Error("Upload a valid MP3 or WAV between 2 KB and 10 MB."), 400);

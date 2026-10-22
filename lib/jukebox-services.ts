@@ -118,8 +118,16 @@ export async function writeDj(track: Track, previous?: Track) {
   return String(data.script || "").replace(/[\*[\]#_]/g, "").slice(0, 600);
 }
 
-export async function speak(text: string, refAudio?: Uint8Array) {
-  const payload: Record<string, unknown> = { model: required("CHATTERBOX_MODEL"), input: text, language_id: "en", response_format: "mp3" };
+export async function speak(text: string, refAudio?: Uint8Array, controls?: { expression?: number; pace?: number; variation?: number }) {
+  const expression = Math.max(0, Math.min(100, Number(controls?.expression ?? 50)));
+  const pace = Math.max(0, Math.min(100, Number(controls?.pace ?? 50)));
+  const variation = Math.max(0, Math.min(100, Number(controls?.variation ?? 50)));
+  const payload: Record<string, unknown> = {
+    model: required("CHATTERBOX_MODEL"), input: text, language_id: "en", response_format: "mp3",
+    exaggeration: 0.2 + expression * 0.01,
+    speed: 0.75 + pace * 0.005,
+    temperature: 0.4 + variation * 0.008,
+  };
   if (refAudio) {
     let binary = "";
     for (const byte of refAudio) binary += String.fromCharCode(byte);

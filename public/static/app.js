@@ -647,7 +647,39 @@ function showVoice(v) {
   voiceId = v.id || "default";
   $("voice-name").textContent = v.id ? `Custom: ${v.name}` : "Default voice";
   $("voice-reset").classList.toggle("hidden", !v.id);
+  if (v.controls) setVoiceControls(v.controls);
 }
+const voiceControlMeta = {
+  expression: { labels: ["Calm", "Balanced", "Expressive"] },
+  pace: { labels: ["Slower", "Normal", "Faster"] },
+  variation: { labels: ["Consistent", "Natural", "Dynamic"] },
+};
+function voiceLabel(key, value) { return voiceControlMeta[key].labels[value < 35 ? 0 : value > 65 ? 2 : 1]; }
+function setVoiceControls(controls) {
+  Object.keys(voiceControlMeta).forEach((key) => {
+    const value = Number(controls[key] ?? 50);
+    $(`voice-${key}`).value = value;
+    $(`voice-${key}-out`).textContent = voiceLabel(key, value);
+  });
+}
+let voiceSaveTimer;
+function queueVoiceControlsSave() {
+  const controls = {};
+  Object.keys(voiceControlMeta).forEach((key) => {
+    const value = Number($(`voice-${key}`).value);
+    controls[key] = value;
+    $(`voice-${key}-out`).textContent = voiceLabel(key, value);
+  });
+  clearTimeout(voiceSaveTimer);
+  voiceSaveTimer = setTimeout(async () => {
+    try {
+      await api("/api/voice", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(controls) });
+      $("voice-msg").textContent = "DJ voice settings saved.";
+      $("voice-msg").className = "msg";
+    } catch (err) { $("voice-msg").textContent = err.message; $("voice-msg").className = "msg error"; }
+  }, 350);
+}
+Object.keys(voiceControlMeta).forEach((key) => $(`voice-${key}`).addEventListener("input", queueVoiceControlsSave));
 $("voice-file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   e.target.value = "";
