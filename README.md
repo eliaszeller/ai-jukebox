@@ -2,6 +2,19 @@
 
 A self-contained Node.js app that creates original songs, matching cover art, and a collection player with spoken AI DJ transitions. No paid APIs, external web assets, package dependencies, or bundled music are used.
 
+## Open the local app
+
+[Open Midnight Radio in Chrome or your browser](http://127.0.0.1:3001/#moods)
+
+This localhost link opens the app running on your own computer; it is not a public deployment. Start the app on port 3001 before opening it. After configuring the class credentials as described below, run these commands in PowerShell from the app folder:
+
+```powershell
+$env:PORT = "3001"
+npm start
+```
+
+If you start the app on its default port instead, open [localhost:3000](http://127.0.0.1:3000/).
+
 ## Mood playlists
 
 Open **Mood playlists** for a recommendation based on the browser's local time and weekday. Morning (5–11 AM) is Slow Wake-Up; afternoon (11 AM–5 PM) is Find Your Flow; evening (5–10 PM) is Evening Unwind; overnight (10 PM–5 AM) is Late-Night Grind for studying. The day themes run from Sunday Reset through Monday Momentum, Tuesday Tunnel Vision, Wednesday Balance, Thursday Push, Friday Freedom, and Saturday Drift. Morning and study prompts prioritize quiet or steady instrumental music over the weekday theme.
