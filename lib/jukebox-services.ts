@@ -75,9 +75,21 @@ export async function generateCover(prompt: string) {
   throw new Error("FLUX cover service returned no image.");
 }
 
-export async function generateMusic(caption: string, lyrics: string, duration: number) {
+export async function generateMusic(caption: string, lyrics: string, duration: number, referenceAudio?: File) {
   const base = required("ACESTEP_BASE_URL");
-  const release = await checked(`${base}/release_task`, { method: "POST", headers: headers(), body: JSON.stringify({ prompt: caption, lyrics: lyrics.trim() || "[Instrumental]", audio_duration: duration, batch_size: 1, audio_format: "mp3", vocal_language: "en", thinking: false }) }, "ACE-Step music service");
+  const values = { prompt: caption, lyrics: lyrics.trim() || "[Instrumental]", audio_duration: duration, batch_size: 1, audio_format: "mp3", vocal_language: "en", thinking: false };
+  let releaseInit: RequestInit;
+  if (referenceAudio) {
+    const form = new FormData();
+    Object.entries(values).forEach(([key, value]) => form.append(key, String(value)));
+    form.append("task_type", "text2music");
+    form.append("audio_cover_strength", "0.25");
+    form.append("reference_audio", referenceAudio, referenceAudio.name);
+    releaseInit = { method: "POST", headers: { Authorization: headers().Authorization }, body: form };
+  } else {
+    releaseInit = { method: "POST", headers: headers(), body: JSON.stringify(values) };
+  }
+  const release = await checked(`${base}/release_task`, releaseInit, "ACE-Step music service");
   const released = await release.json() as Record<string, unknown>;
   const releaseData = (released.data || released) as Record<string, unknown>;
   const taskId = String(releaseData.task_id || "");

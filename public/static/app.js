@@ -586,8 +586,19 @@ async function submitSong(params) {
   jobs.list.unshift(pending);
   jobs.render();
   try {
+    let body;
+    let requestHeaders;
+    if (params.reference) {
+      const form = new FormData();
+      Object.entries(params).forEach(([key, value]) => { if (key !== "reference" && value !== undefined && value !== null) form.append(key, String(value)); });
+      form.append("reference_audio", params.reference, params.reference.name);
+      body = form;
+    } else {
+      requestHeaders = { "Content-Type": "application/json" };
+      body = JSON.stringify(params);
+    }
     const job = await api("/api/songs", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(params),
+      method: "POST", headers: requestHeaders, body,
     });
     Object.assign(pending, job);
     jobs.render();
@@ -600,11 +611,23 @@ async function submitSong(params) {
 }
 
 $("f-duration").addEventListener("input", (e) => ($("f-dur-out").value = e.target.value));
+$("f-reference").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  const note = $("reference-name");
+  if (!file) { note.textContent = "Upload an MP3 or WAV you own or have permission to use (maximum 10 MB). The clip guides timbre, mixing, and performance feel and is not saved."; return; }
+  if (!/\.(mp3|wav)$/i.test(file.name) || file.size < 2000 || file.size > 10 * 1024 * 1024) {
+    e.target.value = "";
+    note.textContent = "Choose a valid MP3 or WAV between 2 KB and 10 MB.";
+    return;
+  }
+  note.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB · used once and not saved`;
+});
 $("song-form").addEventListener("submit", (e) => {
   e.preventDefault();
   submitSong({
     style: $("f-style").value.trim(), mood: $("f-mood").value.trim(),
     artist: $("f-artist").value.trim(),
+    reference: $("f-reference").files[0] || null,
     duration: Number($("f-duration").value),
     vocal: document.querySelector('input[name="vocal"]:checked').value === "1",
     theme: $("f-theme").value.trim(), title: $("f-title").value.trim(),

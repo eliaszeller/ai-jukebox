@@ -88,16 +88,30 @@ export async function POST(request: Request, context: Context) {
     const user = userId(request);
     const { bucket, db } = bindings();
     if (route[0] === "songs") {
-      const params = await request.json() as { style?: string; mood?: string; artist?: string; duration?: number; vocal?: boolean; theme?: string; title?: string };
+      let referenceAudio: File | undefined;
+      let params: { style?: string; mood?: string; artist?: string; duration?: number; vocal?: boolean; theme?: string; title?: string };
+      if ((request.headers.get("content-type") || "").includes("multipart/form-data")) {
+        const form = await request.formData();
+        const uploaded = form.get("reference_audio");
+        if (uploaded instanceof File && uploaded.size) referenceAudio = uploaded;
+        params = {
+          style: String(form.get("style") || ""), mood: String(form.get("mood") || ""), artist: String(form.get("artist") || ""),
+          duration: Number(form.get("duration")), vocal: String(form.get("vocal")) !== "false",
+          theme: String(form.get("theme") || ""), title: String(form.get("title") || ""),
+        };
+      } else {
+        params = await request.json() as typeof params;
+      }
       const style = String(params.style || "").trim(), mood = String(params.mood || "").trim(), artist = String(params.artist || "").trim().slice(0, 120), duration = Number(params.duration);
       if (style.length < 2 || mood.length < 2) return errorResponse(new Error("Style and mood are required."), 400);
       if (duration < 15 || duration > 180) return errorResponse(new Error("Duration must be between 15 and 180 seconds."), 400);
+      if (referenceAudio && (!/\.(mp3|wav)$/i.test(referenceAudio.name) || referenceAudio.size < 2000 || referenceAudio.size > 10_000_000)) return errorResponse(new Error("Reference audio must be an MP3 or WAV between 2 KB and 10 MB."), 400);
       const text = await writeSong({ style, mood, artist, duration, vocal: params.vocal !== false, theme: params.theme, title: params.title });
       const id = uid();
       const caption = `${style}, ${mood} mood. ${text.productionProfile || ""} ${params.vocal === false ? "Instrumental." : "Original vocals; do not imitate a recognizable singer."}`.replace(/\s+/g, " ").trim();
-      const music = await generateMusic(caption, text.lyrics, duration);
+      const music = await generateMusic(caption, text.lyrics, duration, referenceAudio);
       await bucket.put(`${safeUser(user)}/tracks/${id}/song.mp3`, music.bytes, { httpMetadata: { contentType: "audio/mpeg" } });
-      const track: Track = { id, title: text.title, style, mood, artist: artist || null, production_profile: text.productionProfile || null, duration, vocal: params.vocal !== false, theme: text.theme, lyrics: text.lyrics, caption, audio_url: `/api/files/tracks/${id}/song.mp3`, cover_url: null, cover_error: null, music_meta: music.meta, created: Date.now() };
+      const track: Track = { id, title: text.title, style, mood, artist: artist || null, used_reference_audio: Boolean(referenceAudio), production_profile: text.productionProfile || null, duration, vocal: params.vocal !== false, theme: text.theme, lyrics: text.lyrics, caption, audio_url: `/api/files/tracks/${id}/song.mp3`, cover_url: null, cover_error: null, music_meta: music.meta, created: Date.now() };
       try {
         const prompt = await writeCoverPrompt(track); const cover = await generateCover(prompt);
         await bucket.put(`${safeUser(user)}/tracks/${id}/cover.png`, cover, { httpMetadata: { contentType: "image/png" } });

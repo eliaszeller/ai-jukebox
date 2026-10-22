@@ -16,6 +16,7 @@ AI Jukebox is a full-stack music application for MBAX 6418 Assignment 3. It crea
 4. **DJ voice cloning:** the default Chatterbox voice works without an upload. A user may upload an MP3 or WAV reference that they have permission to use, then reset to the default voice.
 5. **Session library:** completed songs are stored in D1/R2, appear in the library, and may be played or queued immediately.
 6. **Music-focused home dashboard:** the restored AI Radio header sits above three cards for the most-listened tracks, the creation studio, and the current queue. Listen counts are kept in the visitor's browser and update when a song begins.
+7. **Reference-sound guidance:** an optional MP3 or WAV can guide the generated track's broad timbre, mixing, performance feel, and atmosphere. The file is forwarded transiently to ACE-Step and is not saved in D1, R2, or Git.
 
 ![Library and playback controls](docs/screenshots/jukebox-library-player.jpg)
 
@@ -93,7 +94,7 @@ The sidebar intentionally contains only these primary destinations. Selecting a 
 ### 1. Generate a custom song
 
 1. Open **Create** from the sidebar or the Home studio card.
-2. Search for or type a style and mood. Optionally add an **Artist inspiration** reference for broad musical traits.
+2. Search for or type a style and mood. Optionally add an **Artist inspiration** reference and an MP3/WAV **Reference sound** that you own or have permission to use.
 3. Select a duration and choose **Vocal** or **Instrumental**.
 4. Optionally enter a title and theme.
 5. Select **Generate song + cover**.
