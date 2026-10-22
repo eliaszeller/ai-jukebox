@@ -604,6 +604,7 @@ $("song-form").addEventListener("submit", (e) => {
   e.preventDefault();
   submitSong({
     style: $("f-style").value.trim(), mood: $("f-mood").value.trim(),
+    artist: $("f-artist").value.trim(),
     duration: Number($("f-duration").value),
     vocal: document.querySelector('input[name="vocal"]:checked').value === "1",
     theme: $("f-theme").value.trim(), title: $("f-title").value.trim(),

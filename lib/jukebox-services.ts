@@ -49,11 +49,12 @@ async function qwen(system: string, user: string, maxTokens = 900) {
   return jsonFromText(body.choices[0]?.message?.content || "");
 }
 
-export async function writeSong(params: { style: string; mood: string; duration: number; vocal: boolean; theme?: string; title?: string }) {
-  const brief = `Style: ${params.style}\nMood: ${params.mood}\nDuration: ${params.duration} seconds\nTheme: ${params.theme || "choose an original one"}\nRequested title: ${params.title || "invent one"}`;
+export async function writeSong(params: { style: string; mood: string; duration: number; vocal: boolean; artist?: string; theme?: string; title?: string }) {
+  const influence = params.artist ? `\nArtist inspiration: ${params.artist}. Capture only broad musical traits such as instrumentation, energy, arrangement, and production. Do not copy any existing melody, lyric, recording, or distinctive voice.` : "";
+  const brief = `Style: ${params.style}\nMood: ${params.mood}\nDuration: ${params.duration} seconds${influence}\nTheme: ${params.theme || "choose an original one"}\nRequested title: ${params.title || "invent one"}`;
   const data = params.vocal
-    ? await qwen("Write original song lyrics. Use [verse], [chorus], and optionally [bridge]. Keep lines short and never quote existing songs.", `${brief}\nReturn JSON: {"title":str,"theme":str,"lyrics":str}`, 1200)
-    : await qwen("Name and describe an original instrumental track.", `${brief}\nReturn JSON: {"title":str,"theme":str}`, 300);
+    ? await qwen("Write wholly original song lyrics. Use [verse], [chorus], and optionally [bridge]. Keep lines short. Never quote, closely paraphrase, or continue an existing song, and never imitate a real singer's voice.", `${brief}\nReturn JSON: {"title":str,"theme":str,"lyrics":str}`, 1200)
+    : await qwen("Name and describe a wholly original instrumental track. Never reproduce an existing melody or recording.", `${brief}\nReturn JSON: {"title":str,"theme":str}`, 300);
   return { title: String(params.title || data.title).slice(0, 80), theme: String(data.theme || params.theme || ""), lyrics: params.vocal ? String(data.lyrics || "") : "" };
 }
 

@@ -25,6 +25,7 @@
 .home-studio-icon { display:grid; place-items:center; width:92px; height:92px; margin:8px 0 34px; border-radius:25px; color:#fff; font-size:44px; background:linear-gradient(145deg,#ff3455,#8f39ee); box-shadow:0 18px 34px rgba(173,43,157,.24); }
 .home-card-action { width:100%; display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding:11px 0 1px; border:0; border-top:1px solid var(--line); background:transparent; color:var(--accent); font-weight:700; cursor:pointer; }
 .home-card-action span { font-size:25px; line-height:1; }
+.field-hint { display:block; margin-top:6px; color:var(--muted); font-size:11px; font-weight:500; line-height:1.4; }
 #home-section, #library-section, #create-section, #voice-studio { scroll-margin-top: 78px; }
 .nav-arrival { animation: nav-arrival 900ms ease-out; }
 #queue-panel.nav-arrival { animation: queue-arrival 900ms ease-out; }

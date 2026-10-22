@@ -10,7 +10,7 @@ AI Jukebox is a full-stack music application for MBAX 6418 Assignment 3. It crea
 
 ## Core features
 
-1. **Custom songs:** select a searchable style and mood, choose 15–180 seconds, and generate either a vocal or instrumental MP3. Qwen writes original lyrics for vocal tracks and ACE-Step creates the audio.
+1. **Custom songs:** select a searchable style and mood, optionally enter an artist for broad musical inspiration, choose 15–180 seconds, and generate either a vocal or instrumental MP3. Qwen writes original lyrics for vocal tracks and ACE-Step creates the audio. Artist inspiration affects general instrumentation, arrangement, energy, and production—not a copied melody, lyric, recording, or voice.
 2. **Matching cover art:** Qwen turns the title, style, mood, theme, and lyric excerpt into an image prompt; FLUX creates a new square cover for the track.
 3. **Integrated AI DJ:** Qwen writes song-specific transitions and Chatterbox speaks them before each queued song. The player uses one audio element, so DJ speech and music cannot overlap.
 4. **DJ voice cloning:** the default Chatterbox voice works without an upload. A user may upload an MP3 or WAV reference that they have permission to use, then reset to the default voice.
@@ -93,7 +93,7 @@ The sidebar intentionally contains only these primary destinations. Selecting a 
 ### 1. Generate a custom song
 
 1. Open **Create** from the sidebar or the Home studio card.
-2. Search for or type a style and mood.
+2. Search for or type a style and mood. Optionally add an **Artist inspiration** reference for broad musical traits.
 3. Select a duration and choose **Vocal** or **Instrumental**.
 4. Optionally enter a title and theme.
 5. Select **Generate song + cover**.
