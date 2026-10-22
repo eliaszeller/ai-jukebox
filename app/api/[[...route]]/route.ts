@@ -94,10 +94,10 @@ export async function POST(request: Request, context: Context) {
       if (duration < 15 || duration > 180) return errorResponse(new Error("Duration must be between 15 and 180 seconds."), 400);
       const text = await writeSong({ style, mood, artist, duration, vocal: params.vocal !== false, theme: params.theme, title: params.title });
       const id = uid();
-      const caption = `${style}, ${mood} mood${artist ? `, broad production and arrangement inspiration from ${artist} without copying any existing song or voice` : ""}${params.vocal === false ? ", instrumental" : ", original vocals"}`;
+      const caption = `${style}, ${mood} mood. ${text.productionProfile || ""} ${params.vocal === false ? "Instrumental." : "Original vocals; do not imitate a recognizable singer."}`.replace(/\s+/g, " ").trim();
       const music = await generateMusic(caption, text.lyrics, duration);
       await bucket.put(`${safeUser(user)}/tracks/${id}/song.mp3`, music.bytes, { httpMetadata: { contentType: "audio/mpeg" } });
-      const track: Track = { id, title: text.title, style, mood, artist: artist || null, duration, vocal: params.vocal !== false, theme: text.theme, lyrics: text.lyrics, caption, audio_url: `/api/files/tracks/${id}/song.mp3`, cover_url: null, cover_error: null, music_meta: music.meta, created: Date.now() };
+      const track: Track = { id, title: text.title, style, mood, artist: artist || null, production_profile: text.productionProfile || null, duration, vocal: params.vocal !== false, theme: text.theme, lyrics: text.lyrics, caption, audio_url: `/api/files/tracks/${id}/song.mp3`, cover_url: null, cover_error: null, music_meta: music.meta, created: Date.now() };
       try {
         const prompt = await writeCoverPrompt(track); const cover = await generateCover(prompt);
         await bucket.put(`${safeUser(user)}/tracks/${id}/cover.png`, cover, { httpMetadata: { contentType: "image/png" } });
