@@ -89,7 +89,11 @@
               </label>
             </div>
             <label>Artist inspiration <span class="optional">optional</span><input id="f-artist" maxlength="120" placeholder="e.g. SZA, Fred again.., Taylor Swift"><span class="field-hint">Uses broad musical traits only—never copies an artist's voice, lyrics, or melody.</span></label>
-            <label class="reference-upload">Reference sound <span class="optional">optional</span><input id="f-reference" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav"><span id="reference-name" class="field-hint">Upload an MP3 or WAV you own or have permission to use (maximum 10 MB). The clip guides timbre, mixing, and performance feel and is not saved.</span></label>
+            <div class="reference-upload">
+              <label for="f-reference">Reference sound <span class="optional">optional</span></label>
+              <input id="f-reference" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav">
+              <div class="reference-status"><span id="reference-name" class="field-hint">Upload an MP3 or WAV you own or have permission to use (maximum 10 MB). The clip guides timbre, mixing, and performance feel and is not saved.</span><button id="reference-remove" type="button" class="reference-remove hidden" aria-label="Remove selected reference sound">Remove</button></div>
+            </div>
             <label>Duration <span class="range-value"><output id="f-dur-out">45</output> sec</span><input id="f-duration" type="range" min="15" max="180" step="5" value="45"></label>
             <fieldset class="toggle"><legend>Track type</legend><label><input type="radio" name="vocal" value="1" checked> Vocal</label><label><input type="radio" name="vocal" value="0"> Instrumental</label></fieldset>
             <div class="field-row"><label>Theme <span class="optional">optional</span><input id="f-theme" maxlength="300" placeholder="A road trip at sunrise"></label><label>Title <span class="optional">optional</span><input id="f-title" maxlength="80" placeholder="Let AI choose"></label></div>

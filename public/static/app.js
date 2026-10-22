@@ -611,17 +611,25 @@ async function submitSong(params) {
 }
 
 $("f-duration").addEventListener("input", (e) => ($("f-dur-out").value = e.target.value));
+const referenceHelp = "Upload an MP3 or WAV you own or have permission to use (maximum 10 MB). The clip guides timbre, mixing, and performance feel and is not saved.";
+function clearReference() {
+  $("f-reference").value = "";
+  $("reference-name").textContent = referenceHelp;
+  $("reference-remove").classList.add("hidden");
+}
 $("f-reference").addEventListener("change", (e) => {
   const file = e.target.files[0];
   const note = $("reference-name");
-  if (!file) { note.textContent = "Upload an MP3 or WAV you own or have permission to use (maximum 10 MB). The clip guides timbre, mixing, and performance feel and is not saved."; return; }
+  if (!file) { clearReference(); return; }
   if (!/\.(mp3|wav)$/i.test(file.name) || file.size < 2000 || file.size > 10 * 1024 * 1024) {
-    e.target.value = "";
+    clearReference();
     note.textContent = "Choose a valid MP3 or WAV between 2 KB and 10 MB.";
     return;
   }
   note.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB · used once and not saved`;
+  $("reference-remove").classList.remove("hidden");
 });
+$("reference-remove").addEventListener("click", clearReference);
 $("song-form").addEventListener("submit", (e) => {
   e.preventDefault();
   submitSong({
