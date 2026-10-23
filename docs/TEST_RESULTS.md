@@ -170,3 +170,18 @@ Because the song source is not loaded until the DJ clip ends, DJ speech and musi
 
 - `/api/songs` waits while polling the asynchronous ACE-Step task. A durable background queue would better tolerate long service delays or request interruption.
 - Anonymous visitors share the fallback public library, while signed-in visitors have separate libraries. Classroom testing is supported, but a production multi-user deployment should require authentication.
+
+## Follow-up Windows ZIP tests — October 22, 2026
+
+See [ZIP_TEST_RESULTS.md](ZIP_TEST_RESULTS.md) for the clean GitHub ZIP tests at commit ea491c92f1aceb55b6ecc9a21c386b1e58a8883c. The user confirmed good custom-voice similarity and attributed the Play/Pause display observation to their browser size, requesting it be ignored. No playback-label fix is claimed. Root configuration loading is corrected in the start script. The new final commit must be identified and its matching ZIP startup retested before final submission; historical results do not constitute a test of an unknown future commit.
+
+## Finalization branch validation — October 22, 2026
+
+On local branch codex/assignment-3-finalization:
+- npm test: PASS, five tests covering interface switching, reserved-port rejection, embedded-credential rejection, same-origin media downloads, and upstream-error credential redaction/redirect prevention.
+- npm run build: PASS, all five stages.
+- Plain npm start: PASS, the absolute-path launcher loads root .dev.vars; /api/status returns problems: []. A relative --env-file argument alone was insufficient with the generated Wrangler configuration.
+- Live regression: Finalization Check / Ambient / Calm / 15 seconds / instrumental: PASS, song and cover generated without warnings and both media downloads returned HTTP 200.
+- Live Qwen/Chatterbox DJ for the regression track: PASS, text and playable audio response retrieved.
+
+The initial redirect-hardening trial used a fetch mode unsupported by the edge runtime; it was replaced with manual redirect handling, rebuilt, and the live regression passed. No deployed final GitHub ZIP is claimed by these local-branch checks. After merging, record the final commit and verify startup from its exact GitHub ZIP.

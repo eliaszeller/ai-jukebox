@@ -8,7 +8,7 @@ The integrated designs adapt the light Elias interface, James's dark green Midni
 
 Integration records the original branch histories on `main`; the contributor branches remain unchanged. UI switching checks: `node --test tests/interfaces.test.mjs`.
 
-AI Jukebox is a full-stack music application for MBAX 6418 Assignment 3. It creates original songs, matching cover art, and spoken radio-DJ transitions using only the required class services.
+AI Jukebox is a full-stack music application for Assignment 3. It creates original songs, matching cover art, and spoken radio-DJ transitions using only the required class services.
 
 - Live app: https://ai-jukebox.eliaszeller2.chatgpt.site/jukebox
 - Repository: https://github.com/eliaszeller/ai-jukebox
@@ -52,7 +52,7 @@ The application uses only the class-provided services and does not use paid serv
 
 Endpoint addresses and credentials are intentionally omitted from this public repository. Obtain the current values from the private class documentation and place them in a local `.dev.vars` file using the runtime-variable names referenced by the server code.
 
-Create `.dev.vars` in the extracted project root. Replace every placeholder locally; never commit this file:
+Copy `.dev.vars.example` to `.dev.vars` in the extracted project root. Replace every placeholder locally using the private class file; never commit `.dev.vars`:
 
 ```dotenv
 CLASS_API_KEY="<class credential>"
@@ -78,7 +78,7 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 npm start
 ```
 
-Open the loopback URL printed by Wrangler and append `/jukebox`. The migration command initializes the fresh local database; do not rerun it against an existing database. Supply `.dev.vars` before starting the app. A live hosted demo is not a substitute for this ZIP installation.
+Open the loopback URL printed by Wrangler and append `/jukebox`. The migration command initializes the fresh local database; do not rerun it against an existing database. Supply `.dev.vars` before starting the app. The `npm start` launcher passes the absolute project-root `.dev.vars` path to Wrangler; no additional configuration flag is needed. On Windows PowerShell, use `npm.cmd` if execution policy prevents running `npm.ps1`. For a second local installation, use `npm start -- --port 8788`. A live hosted demo is not a substitute for this ZIP installation.
 
 For development with hot reload:
 
@@ -158,7 +158,9 @@ They were generated in advance using the class endpoints only: Qwen created titl
 
 See [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md) for dated inputs, expected behavior, actual results, asset validation, and the failure test. See [docs/INDEPENDENT_INSTALL.md](docs/INDEPENDENT_INSTALL.md) for the clean GitHub ZIP procedure and results.
 
-Historical core-feature checks (2026-10-21; earlier deployment, not a fresh test of every feature on current `main`):
+Fresh Windows ZIP tests for commit `ea491c92f1aceb55b6ecc9a21c386b1e58a8883c` are recorded in [docs/ZIP_TEST_RESULTS.md](docs/ZIP_TEST_RESULTS.md). They cover clean install/build/migration, vocal and instrumental generation, covers, default/custom DJ speech, invalid-input recovery, playback/Skip, browser MP3/WAV uploads, and restart persistence. The user confirmed good voice similarity. The launch-script correction was verified separately after those tests; the complete live generation suite was not rerun against a new final ZIP.
+
+Historical core-feature checks (2026-10-21; earlier deployment):
 
 - Hosted configuration: no missing variables
 - Bundled samples: 3/3 available
@@ -191,7 +193,8 @@ A second limitation is identity scope: authenticated visitors receive their own 
 - `.dev.vars`, `.env*`, generated runtime state, archives, and local output directories are ignored.
 - User uploads and voice references are stored in R2, not Git.
 - The repository contains only class-generated sample assets.
-- Error responses truncate upstream text and do not log credentials.
+- Error responses redact the configured class key before truncating upstream text.
+- Port 9000 and embedded URL credentials are rejected; authenticated media downloads must stay on the configured service origin and redirects are not followed.
 
 ## Submission checklist
 
@@ -205,3 +208,9 @@ A second limitation is identity scope: authenticated visitors receive their own 
 ## Team verification
 
 The repository contains the technical test evidence produced during development. The assignment additionally requires the team to verify the finished app and explain the findings in its own words. Each teammate should add their contribution and review through their own branch and a pull request; placeholder branches alone do not satisfy that requirement.
+
+## Final verification status
+
+The ZIP test report distinguishes automated observations from the user's listening confirmation. The user identified the observed Play/Pause display issue as browser sizing and requested that it be excluded from unresolved defects. The startup configuration issue is addressed in the package script. After merging final changes, record the final commit and download its matching GitHub ZIP; repeat at least installation/startup on that version. Keep all private configuration, runtime databases, generated user files, and recordings out of the submission. Team members must provide their own contribution/review evidence and findings; no Hermes build or team review is claimed by these tests. The original assignment starter prompt is retained in BUILD_PROMPT.md for review.
+
+Run `npm test` for the interface and service-safeguard regression tests.

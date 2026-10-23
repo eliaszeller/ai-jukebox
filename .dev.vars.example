@@ -1,0 +1,9 @@
+# Copy to .dev.vars, replace placeholders using the private class file, and never commit .dev.vars.
+CLASS_API_KEY="<class credential>"
+QWEN_BASE_URL="<class text base URL including /v1>"
+QWEN_MODEL="<class text model ID>"
+FLUX_BASE_URL="<class image base URL including /v1>"
+FLUX_MODEL="<class image model ID>"
+ACESTEP_BASE_URL="<class music base URL>"
+CHATTERBOX_BASE_URL="<class speech base URL without /v1>"
+CHATTERBOX_MODEL="chatterbox-v3"

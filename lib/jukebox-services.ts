@@ -5,6 +5,12 @@ type Track = Record<string, unknown>;
 function required(name: keyof Cloudflare.Env): string {
   const value = env[name];
   if (typeof value !== "string" || !value.trim()) throw new Error(`${name} is not configured`);
+  if (String(name).endsWith("_BASE_URL")) {
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol) || url.port === "9000" || url.username || url.password) {
+      throw new Error(`${name} must use an allowed class endpoint, without embedded credentials or port 9000.`);
+    }
+  }
   return value.replace(/\/$/, "");
 }
 
@@ -13,9 +19,10 @@ function headers() {
 }
 
 async function checked(url: string, init: RequestInit, label: string) {
-  const response = await fetch(url, init);
+  const response = await fetch(url, { ...init, redirect: "manual" });
   if (!response.ok) {
-    const text = (await response.text()).slice(0, 240);
+    const key = required("CLASS_API_KEY");
+    const text = (await response.text()).split(key).join("[redacted]").slice(0, 240);
     if (response.status === 401 || response.status === 403) throw new Error(`${label} rejected the configured credentials.`);
     if (response.status === 429) throw new Error(`${label} is busy. Please try again shortly.`);
     throw new Error(`${label} returned ${response.status}${text ? `: ${text}` : ""}`);
@@ -64,6 +71,15 @@ export async function writeCoverPrompt(track: Track) {
   return `${String(data.prompt)} Square album cover art, no text, no typography.`;
 }
 
+function mediaUrl(value: string, base: string) {
+  const expected = new URL(base);
+  const url = new URL(value, `${base}/`);
+  if (url.origin !== expected.origin || url.username || url.password || !["http:", "https:"].includes(url.protocol)) {
+    throw new Error("Generated media must come from the configured class service.");
+  }
+  return url.toString();
+}
+
 export async function generateCover(prompt: string) {
   const response = await checked(`${required("FLUX_BASE_URL")}/images/generations`, {
     method: "POST", headers: headers(), body: JSON.stringify({ model: required("FLUX_MODEL"), prompt, n: 1, size: "1024x1024", response_format: "b64_json", num_inference_steps: 8 }),
@@ -71,7 +87,7 @@ export async function generateCover(prompt: string) {
   const body = await response.json() as { data: Array<{ b64_json?: string; url?: string }> };
   const item = body.data?.[0];
   if (item?.b64_json) return Uint8Array.from(atob(item.b64_json), c => c.charCodeAt(0));
-  if (item?.url) return new Uint8Array(await (await checked(item.url, { headers: { Authorization: headers().Authorization } }, "FLUX image download")).arrayBuffer());
+  if (item?.url) return new Uint8Array(await (await checked(mediaUrl(item.url, required("FLUX_BASE_URL")), { headers: { Authorization: headers().Authorization } }, "FLUX image download")).arrayBuffer());
   throw new Error("FLUX cover service returned no image.");
 }
 
@@ -105,7 +121,7 @@ export async function generateMusic(caption: string, lyrics: string, duration: n
     const result = typeof item.result === "string" ? JSON.parse(item.result) : item.result;
     const first = (result as Array<Record<string, unknown>>)?.[0];
     if (!first?.file) throw new Error("ACE-Step finished without an audio file.");
-    const url = new URL(String(first.file), `${base}/`).toString();
+    const url = mediaUrl(String(first.file), base);
     const audio = await checked(url, { headers: { Authorization: headers().Authorization } }, "ACE-Step audio download");
     return { bytes: new Uint8Array(await audio.arrayBuffer()), meta: first };
   }

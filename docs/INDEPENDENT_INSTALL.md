@@ -2,7 +2,15 @@
 
 This document records a clean-room install from the GitHub-generated ZIP rather than from the development checkout.
 
-## Current main ZIP check — 2026-10-22
+## Windows ZIP verification — October 22, 2026
+
+Tested commit: `ea491c92f1aceb55b6ecc9a21c386b1e58a8883c`. The user downloaded and extracted the GitHub ZIP into a fresh Windows folder. Codex assisted with dependency installation, configuration from the external class file, database initialization, and tests. The folder initially had no dependencies, private configuration, or runtime state. This is agent-assisted evidence; it does not claim the teammate independently executed every installation command.
+
+See [ZIP_TEST_RESULTS.md](ZIP_TEST_RESULTS.md) for actual inputs and results. Node 22.23.2 / npm 12.0.2: install, five-stage build, migration, interface test, both song types/covers, default DJ, MP3/WAV API references, browser uploads, invalid-input recovery, automatic playback, Skip, and restart persistence passed. The user confirmed voice similarity was good. No recording is included in the repository.
+
+The original README launch command failed to load root `.dev.vars`. The finalization change adds a local launcher that passes the absolute project-root `.dev.vars` path to Wrangler, so the documented `npm start` is sufficient. Launch verification of the correction is separate from the tested original ZIP; record the final commit and repeat startup from its matching ZIP before submission.
+
+## Earlier macOS ZIP check — 2026-10-22
 
 Tested application commit: `7e8aa385feb79cba6afe50ab0f8e2adc4e355d2c` (main at test time).
 Source: https://github.com/eliaszeller/ai-jukebox/archive/7e8aa385feb79cba6afe50ab0f8e2adc4e355d2c.zip
